@@ -1,0 +1,6 @@
+@FHealthSphere_HostAddress = http://localhost:5210
+
+GET {{FHealthSphere_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
