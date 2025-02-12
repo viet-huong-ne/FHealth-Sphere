@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static ToyShop.Core.Base.BaseException;
+using static Core.Base.BaseException;
 
 namespace Core.Utils
 {

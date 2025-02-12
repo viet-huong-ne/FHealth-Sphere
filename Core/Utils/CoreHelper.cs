@@ -38,19 +38,19 @@ namespace Core.Utils
             return result;
         }
 
-        public static string HashPassword(string passwordHasher)
-        {
-            return BCrypt.Net.BCrypt.HashPassword(passwordHasher);
-        }
+        //public static string HashPassword(string passwordHasher)
+        //{
+        //    return BCrypt.Net.BCrypt.HashPassword(passwordHasher);
+        //}
 
-        public static bool VerifyPassword(string password1, string password2)
-        {
-            if (string.IsNullOrWhiteSpace(password2))
-            {
-                throw new ArgumentException("Mật khẩu đã lưu không thể rỗng.");
-            }
-            return BCrypt.Net.BCrypt.Verify(password1, password2);
-        }
+        //public static bool VerifyPassword(string password1, string password2)
+        //{
+        //    if (string.IsNullOrWhiteSpace(password2))
+        //    {
+        //        throw new ArgumentException("Mật khẩu đã lưu không thể rỗng.");
+        //    }
+        //    return BCrypt.Net.BCrypt.Verify(password1, password2);
+        //}
     }
 }
 

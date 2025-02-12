@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Contract.Repositories\Contract.Repositories.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UserModelViews\" />
+  </ItemGroup>
+
 </Project>

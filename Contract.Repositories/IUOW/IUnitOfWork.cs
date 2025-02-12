@@ -1,4 +1,5 @@
-﻿using Contract.Repositories.IUOW;
+﻿using Contract.Repositories.Entity;
+using Contract.Repositories.IUOW;
 
 namespace Contract.Repositories.Interface
 {

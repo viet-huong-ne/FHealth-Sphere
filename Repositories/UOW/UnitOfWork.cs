@@ -7,7 +7,8 @@ namespace Repositories.UOW
     public class UnitOfWork(FHealthSphereDBContext dbContext) : IUnitOfWork
     {
         private bool disposed = false;
-        private readonly Repositories.Base.FHealthSphereDBContext _dbContext = dbContext;
+        private readonly FHealthSphereDBContext _dbContext = dbContext;
+        
         public void BeginTransaction()
         {
             _dbContext.Database.BeginTransaction();
