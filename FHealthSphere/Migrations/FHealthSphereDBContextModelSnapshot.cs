@@ -356,16 +356,16 @@ namespace FHealthSphere.Migrations
 
             modelBuilder.Entity("Contract.Repositories.Entity.Band", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BandBrandID")
+                    b.Property<int>("BandBrandId")
                         .HasColumnType("int");
 
-                    b.Property<int>("BandTypeID")
+                    b.Property<int>("BandTypeId")
                         .HasColumnType("int");
 
                     b.Property<string>("CreatedBy")
@@ -390,25 +390,25 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("PatientID")
+                    b.Property<int>("PatientId")
                         .HasColumnType("int");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
-                    b.HasIndex("BandBrandID");
+                    b.HasIndex("BandBrandId");
 
-                    b.HasIndex("PatientID");
+                    b.HasIndex("PatientId");
 
                     b.ToTable("Bands");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.BandBrand", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -432,20 +432,20 @@ namespace FHealthSphere.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
                     b.ToTable("BandBrands");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.HealthRecord", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BandID")
+                    b.Property<int>("BandId")
                         .HasColumnType("int");
 
                     b.Property<string>("CreatedBy")
@@ -470,25 +470,25 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("PatientID")
+                    b.Property<int>("PatientId")
                         .HasColumnType("int");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
-                    b.HasIndex("BandID");
+                    b.HasIndex("BandId");
 
-                    b.HasIndex("PatientID");
+                    b.HasIndex("PatientId");
 
                     b.ToTable("HealthRecords");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.Metric", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("DefaultValue")
                         .HasColumnType("decimal(18,2)");
@@ -496,7 +496,7 @@ namespace FHealthSphere.Migrations
                     b.Property<decimal>("MaxValue")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("MetricGroupID")
+                    b.Property<int?>("MetricGroupId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("MinValue")
@@ -510,20 +510,20 @@ namespace FHealthSphere.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
-                    b.HasIndex("MetricGroupID");
+                    b.HasIndex("MetricGroupId");
 
                     b.ToTable("Metrics");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.MetricGroup", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -554,20 +554,20 @@ namespace FHealthSphere.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
                     b.ToTable("MetricGroup");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.NotificationSystem", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AccountID")
+                    b.Property<int>("AccountId")
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
@@ -596,20 +596,20 @@ namespace FHealthSphere.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
-                    b.HasIndex("AccountID");
+                    b.HasIndex("AccountId");
 
                     b.ToTable("NotificationSystems");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.NotificationWatcher", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -629,7 +629,7 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("NotificationID")
+                    b.Property<int>("NotificationId")
                         .HasColumnType("int");
 
                     b.Property<bool>("Status")
@@ -638,27 +638,27 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTime>("Time")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("WatcherID")
+                    b.Property<int>("WatcherId")
                         .HasColumnType("int");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
-                    b.HasIndex("NotificationID");
+                    b.HasIndex("NotificationId");
 
-                    b.HasIndex("WatcherID");
+                    b.HasIndex("WatcherId");
 
                     b.ToTable("NotificationWatchers");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.PatientInformation", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AccountID")
+                    b.Property<int>("AccountId")
                         .HasColumnType("int");
 
                     b.Property<string>("CreatedBy")
@@ -686,20 +686,20 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
-                    b.HasIndex("AccountID");
+                    b.HasIndex("AccountId");
 
                     b.ToTable("PatientInformations");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.RecordMetricItem", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -713,7 +713,7 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("HealthRecordID")
+                    b.Property<int>("HealthRecordId")
                         .HasColumnType("int");
 
                     b.Property<string>("LastUpdatedBy")
@@ -722,10 +722,10 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("MetricID")
+                    b.Property<int>("MetricId")
                         .HasColumnType("int");
 
-                    b.Property<int>("RecordID")
+                    b.Property<int>("RecordId")
                         .HasColumnType("int");
 
                     b.Property<string>("Type")
@@ -736,22 +736,22 @@ namespace FHealthSphere.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
-                    b.HasIndex("HealthRecordID");
+                    b.HasIndex("HealthRecordId");
 
-                    b.HasIndex("MetricID");
+                    b.HasIndex("MetricId");
 
                     b.ToTable("RecordMetricItems");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.Watcher", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -771,17 +771,17 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("PatientID")
+                    b.Property<int>("PatientId")
                         .HasColumnType("int");
 
-                    b.Property<int>("RelativeID")
+                    b.Property<int>("RelativeId")
                         .HasColumnType("int");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
-                    b.HasIndex("PatientID");
+                    b.HasIndex("PatientId");
 
-                    b.HasIndex("RelativeID");
+                    b.HasIndex("RelativeId");
 
                     b.ToTable("Watchers");
                 });
@@ -841,13 +841,13 @@ namespace FHealthSphere.Migrations
                 {
                     b.HasOne("Contract.Repositories.Entity.BandBrand", "BandBrand")
                         .WithMany("Bands")
-                        .HasForeignKey("BandBrandID")
+                        .HasForeignKey("BandBrandId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Contract.Repositories.Entity.Account", "Patient")
                         .WithMany("Bands")
-                        .HasForeignKey("PatientID")
+                        .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -860,13 +860,13 @@ namespace FHealthSphere.Migrations
                 {
                     b.HasOne("Contract.Repositories.Entity.Band", "Band")
                         .WithMany("HealthRecords")
-                        .HasForeignKey("BandID")
+                        .HasForeignKey("BandId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Contract.Repositories.Entity.Account", "Patient")
                         .WithMany("HealthRecords")
-                        .HasForeignKey("PatientID")
+                        .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -879,14 +879,14 @@ namespace FHealthSphere.Migrations
                 {
                     b.HasOne("Contract.Repositories.Entity.MetricGroup", null)
                         .WithMany("Tags")
-                        .HasForeignKey("MetricGroupID");
+                        .HasForeignKey("MetricGroupId");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.NotificationSystem", b =>
                 {
                     b.HasOne("Contract.Repositories.Entity.Account", "Accounts")
                         .WithMany("NotificationSystems")
-                        .HasForeignKey("AccountID")
+                        .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -897,13 +897,13 @@ namespace FHealthSphere.Migrations
                 {
                     b.HasOne("Contract.Repositories.Entity.NotificationSystem", "NotificationSystem")
                         .WithMany("NotificationWatchers")
-                        .HasForeignKey("NotificationID")
+                        .HasForeignKey("NotificationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Contract.Repositories.Entity.Watcher", "Watcher")
                         .WithMany("NotificationWatchers")
-                        .HasForeignKey("WatcherID")
+                        .HasForeignKey("WatcherId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -916,7 +916,7 @@ namespace FHealthSphere.Migrations
                 {
                     b.HasOne("Contract.Repositories.Entity.Account", "Account")
                         .WithMany("PatientInformation")
-                        .HasForeignKey("AccountID")
+                        .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -927,13 +927,13 @@ namespace FHealthSphere.Migrations
                 {
                     b.HasOne("Contract.Repositories.Entity.HealthRecord", "HealthRecord")
                         .WithMany("RecordMetricItems")
-                        .HasForeignKey("HealthRecordID")
+                        .HasForeignKey("HealthRecordId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Contract.Repositories.Entity.Metric", "Metric")
                         .WithMany()
-                        .HasForeignKey("MetricID")
+                        .HasForeignKey("MetricId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -946,13 +946,13 @@ namespace FHealthSphere.Migrations
                 {
                     b.HasOne("Contract.Repositories.Entity.Account", "Patient")
                         .WithMany()
-                        .HasForeignKey("PatientID")
+                        .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Contract.Repositories.Entity.Account", "Relative")
                         .WithMany()
-                        .HasForeignKey("RelativeID")
+                        .HasForeignKey("RelativeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

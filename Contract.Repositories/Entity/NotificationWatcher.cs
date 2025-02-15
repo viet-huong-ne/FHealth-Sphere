@@ -12,20 +12,20 @@ namespace Contract.Repositories.Entity
     public class NotificationWatcher : BaseEntity
     {
         [Key]
-        public int ID { get; set; }  // PK tự động tăng
+        public int Id { get; set; }  // PK tự động tăng
 
         [Required]
-        public int WatcherID { get; set; }  // FK -> Watcher
+        public int WatcherId { get; set; }  // FK -> Watcher
 
         [Required]
         public bool Status { get; set; }
 
         public DateTime Time { get; set; }
 
-        [ForeignKey("WatcherID")]
+        [ForeignKey("WatcherId")]
         public virtual Watcher Watcher { get; set; }
 
-        [ForeignKey("NotificationID")]
+        [ForeignKey("NotificationId")]
         public virtual NotificationSystem NotificationSystem { get; set; }
     }
 }

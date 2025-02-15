@@ -11,7 +11,7 @@ namespace Contract.Repositories.Entity
     public class MetricGroup : BaseEntity
     {
         [Key]
-        public int ID { get; set; }
+        public int Id { get; set; }
         public int DisplayOrder {  get; set; }
         public string Name { get; set; }
         public string Status { get; set; }

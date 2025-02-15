@@ -11,9 +11,8 @@ namespace Contract.Repositories.Entity
     public class Band : BaseEntity
     {
         [Key]
-        public int ID { get; set; }
-        public int BandTypeID { get; set; }
-        public int PatientID { get; set; }
+        public int Id { get; set; }
+        public int PatientId { get; set; }
         public string Image { get; set; }
 
         public virtual Account Patient { get; set; }

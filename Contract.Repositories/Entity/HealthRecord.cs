@@ -12,12 +12,12 @@ namespace Contract.Repositories.Entity
     public class HealthRecord : BaseEntity
     {
         [Key]
-        public int ID { get; set; }  // ID tự động tăng
+        public int Id { get; set; }  // ID tự động tăng
         [Required]
-        public int PatientID { get; set; }
-        public int BandID { get; set; }
+        public int PatientId { get; set; }
+        public int BandId { get; set; }
         public string GhiChu { get; set; }
-        [ForeignKey("PatientID")]
+        [ForeignKey("PatientId")]
         public virtual Account Patient { get; set; }
         public virtual Band Band { get; set; }
         public virtual ICollection<RecordMetricItem> RecordMetricItems { get; set; }

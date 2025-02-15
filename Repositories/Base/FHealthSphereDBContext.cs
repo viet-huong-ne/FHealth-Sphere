@@ -45,34 +45,34 @@ namespace Repositories.Base
                 }
             }
             //modelBuilder.Entity<Account>().Property(a => a.).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Watcher>().Property(w => w.ID).ValueGeneratedOnAdd();
-            modelBuilder.Entity<PatientInformation>().Property(p => p.ID).ValueGeneratedOnAdd();
-            modelBuilder.Entity<NotificationSystem>().Property(n => n.ID).ValueGeneratedOnAdd();
-            modelBuilder.Entity<NotificationWatcher>().Property(nw => nw.ID).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Metric>().Property(m => m.ID).ValueGeneratedOnAdd();
-            modelBuilder.Entity<MetricGroup>().Property(mg => mg.ID).ValueGeneratedOnAdd();
-            modelBuilder.Entity<HealthRecord>().Property(hr => hr.ID).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Band>().Property(b => b.ID).ValueGeneratedOnAdd();
-            modelBuilder.Entity<BandBrand>().Property(bb => bb.ID).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Watcher>().Property(w => w.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<PatientInformation>().Property(p => p.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<NotificationSystem>().Property(n => n.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<NotificationWatcher>().Property(nw => nw.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Metric>().Property(m => m.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<MetricGroup>().Property(mg => mg.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<HealthRecord>().Property(hr => hr.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Band>().Property(b => b.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<BandBrand>().Property(bb => bb.Id).ValueGeneratedOnAdd();
             //quan hệ cho HealthRecord
             modelBuilder.Entity<HealthRecord>()
                 .HasOne(hr => hr.Patient)
                 .WithMany(a => a.HealthRecords)
-                .HasForeignKey(hr => hr.PatientID)
+                .HasForeignKey(hr => hr.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Thiết lập quan hệ cho PatientInformation
             modelBuilder.Entity<PatientInformation>()
                 .HasOne(p => p.Account)
                 .WithMany(a => a.PatientInformation)
-                .HasForeignKey(p => p.AccountID)
+                .HasForeignKey(p => p.AccountId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Thiết lập quan hệ cho Notification
             modelBuilder.Entity<NotificationSystem>()
                 .HasOne(n => n.Accounts)
                 .WithMany(a => a.NotificationSystems)
-                .HasForeignKey(n => n.AccountID)
+                .HasForeignKey(n => n.AccountId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Thiết lập quan hệ cho NotificationWatcher
@@ -93,13 +93,13 @@ namespace Repositories.Base
             modelBuilder.Entity<Watcher>()
                 .HasOne(w => w.Relative)
                 .WithMany()
-                .HasForeignKey(w => w.RelativeID)
+                .HasForeignKey(w => w.RelativeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Watcher>()
                 .HasOne(w => w.Patient)
                 .WithMany()
-                .HasForeignKey(w => w.PatientID)
+                .HasForeignKey(w => w.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

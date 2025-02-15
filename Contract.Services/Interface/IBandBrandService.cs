@@ -1,4 +1,5 @@
 ﻿using Contract.Repositories.Entity;
+using Core.Base;
 using ModelViews.BandBrandModelViews;
 using System;
 using System.Collections.Generic;
@@ -11,5 +12,6 @@ namespace Contract.Services.Interface
     public interface IBandBrandService
     {
         Task<BandBrand> CreateBandBrand(CreateBandBrandModel model);
+        Task<BasePaginatedList<BandBrand>> GetAllBandBrand(int pageNumber, int pageSize);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Contract.Repositories.Entity;
 using Contract.Repositories.Interface;
 using Contract.Services.Interface;
+using Core.Base;
+using Microsoft.EntityFrameworkCore;
 using ModelViews.BandBrandModelViews;
 using System;
 using System.Collections.Generic;
@@ -43,6 +45,25 @@ namespace Services.Service
                throw new Exception("can't create band brand", ex);
             }
                 
+        }
+
+        public async Task<BasePaginatedList<BandBrand>> GetAllBandBrand(int pageNumber, int pageSize)
+        {
+            //get list band brand which aren't deleted and descending order
+            IQueryable<BandBrand> BandBrandsQuery = _unitOfWork.GetRepository<BandBrand>()
+                .Entities
+                .Where(p => !p.DeletedTime.HasValue)
+                .OrderByDescending(p => p.CreatedTime);
+            // count all brands that have not been deleted
+            int TotalCount = await BandBrandsQuery.CountAsync();
+
+            // get 
+            var brands = await BandBrandsQuery
+                .OrderBy(s => s.Id)
+                .Skip((pageNumber -1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return new BasePaginatedList<BandBrand> (brands, TotalCount, pageNumber, pageSize);
         }
     }
 }

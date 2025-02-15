@@ -12,12 +12,12 @@ namespace Contract.Repositories.Entity
     public class NotificationSystem : BaseEntity
     {
 
-        public int ID { get; set; }
+        public int Id { get; set; }
         [Required]
-        public int AccountID { get; set; }
+        public int AccountId { get; set; }
         public string Content { get; set; }
         public string status { get; set; }
-        [ForeignKey("AccountID")]
+        [ForeignKey("AccountId")]
         public virtual Account Accounts { get; set; } 
         public virtual ICollection<NotificationWatcher> NotificationWatchers { get; set; }
 

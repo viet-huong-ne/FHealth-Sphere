@@ -11,7 +11,7 @@ namespace Contract.Repositories.Entity
     public class Metric
     {
         [Key]
-        public int ID { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public string Unit { get; set; }
         [Column(TypeName = "decimal(18,2)")]

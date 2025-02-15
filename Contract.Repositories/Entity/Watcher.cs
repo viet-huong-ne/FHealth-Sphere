@@ -12,11 +12,11 @@ namespace Contract.Repositories.Entity
     public class Watcher : BaseEntity
     {
         [Key]
-        public int ID { get; set; }
+        public int Id { get; set; }
         [ForeignKey("Relative")]
-        public int RelativeID { get; set; }
+        public int RelativeId { get; set; }
         [ForeignKey("Patient")]
-        public int PatientID { get; set; }
+        public int PatientId { get; set; }
 
         public virtual Account Relative { get; set; }
         public virtual Account Patient { get; set; }

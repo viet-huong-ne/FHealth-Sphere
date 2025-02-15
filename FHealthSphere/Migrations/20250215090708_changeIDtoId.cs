@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FHealthSphere.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class changeIDtoId : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +15,7 @@ namespace FHealthSphere.Migrations
                 name: "BandBrands",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     NameBrand = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -27,14 +27,14 @@ namespace FHealthSphere.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BandBrands", x => x.ID);
+                    table.PrimaryKey("PK_BandBrands", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "MetricGroup",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DisplayOrder = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -48,7 +48,7 @@ namespace FHealthSphere.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MetricGroup", x => x.ID);
+                    table.PrimaryKey("PK_MetricGroup", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -109,23 +109,23 @@ namespace FHealthSphere.Migrations
                 name: "Metrics",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Unit = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MinValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     MaxValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DefaultValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MetricGroupID = table.Column<int>(type: "int", nullable: true)
+                    MetricGroupId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Metrics", x => x.ID);
+                    table.PrimaryKey("PK_Metrics", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Metrics_MetricGroup_MetricGroupID",
-                        column: x => x.MetricGroupID,
+                        name: "FK_Metrics_MetricGroup_MetricGroupId",
+                        column: x => x.MetricGroupId,
                         principalTable: "MetricGroup",
-                        principalColumn: "ID");
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -159,12 +159,12 @@ namespace FHealthSphere.Migrations
                 name: "Bands",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    BandTypeID = table.Column<int>(type: "int", nullable: false),
-                    PatientID = table.Column<int>(type: "int", nullable: false),
+                    BandTypeId = table.Column<int>(type: "int", nullable: false),
+                    PatientId = table.Column<int>(type: "int", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BandBrandID = table.Column<int>(type: "int", nullable: false),
+                    BandBrandId = table.Column<int>(type: "int", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -174,16 +174,16 @@ namespace FHealthSphere.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Bands", x => x.ID);
+                    table.PrimaryKey("PK_Bands", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Bands_BandBrands_BandBrandID",
-                        column: x => x.BandBrandID,
+                        name: "FK_Bands_BandBrands_BandBrandId",
+                        column: x => x.BandBrandId,
                         principalTable: "BandBrands",
-                        principalColumn: "ID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Bands_Users_PatientID",
-                        column: x => x.PatientID,
+                        name: "FK_Bands_Users_PatientId",
+                        column: x => x.PatientId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -193,9 +193,9 @@ namespace FHealthSphere.Migrations
                 name: "NotificationSystems",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AccountID = table.Column<int>(type: "int", nullable: false),
+                    AccountId = table.Column<int>(type: "int", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -207,10 +207,10 @@ namespace FHealthSphere.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_NotificationSystems", x => x.ID);
+                    table.PrimaryKey("PK_NotificationSystems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_NotificationSystems_Users_AccountID",
-                        column: x => x.AccountID,
+                        name: "FK_NotificationSystems_Users_AccountId",
+                        column: x => x.AccountId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -220,9 +220,9 @@ namespace FHealthSphere.Migrations
                 name: "PatientInformations",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AccountID = table.Column<int>(type: "int", nullable: false),
+                    AccountId = table.Column<int>(type: "int", nullable: false),
                     Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -234,10 +234,10 @@ namespace FHealthSphere.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PatientInformations", x => x.ID);
+                    table.PrimaryKey("PK_PatientInformations", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PatientInformations_Users_AccountID",
-                        column: x => x.AccountID,
+                        name: "FK_PatientInformations_Users_AccountId",
+                        column: x => x.AccountId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -356,10 +356,10 @@ namespace FHealthSphere.Migrations
                 name: "Watchers",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RelativeID = table.Column<int>(type: "int", nullable: false),
-                    PatientID = table.Column<int>(type: "int", nullable: false),
+                    RelativeId = table.Column<int>(type: "int", nullable: false),
+                    PatientId = table.Column<int>(type: "int", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -369,16 +369,16 @@ namespace FHealthSphere.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Watchers", x => x.ID);
+                    table.PrimaryKey("PK_Watchers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Watchers_Users_PatientID",
-                        column: x => x.PatientID,
+                        name: "FK_Watchers_Users_PatientId",
+                        column: x => x.PatientId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Watchers_Users_RelativeID",
-                        column: x => x.RelativeID,
+                        name: "FK_Watchers_Users_RelativeId",
+                        column: x => x.RelativeId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -388,10 +388,10 @@ namespace FHealthSphere.Migrations
                 name: "HealthRecords",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    PatientID = table.Column<int>(type: "int", nullable: false),
-                    BandID = table.Column<int>(type: "int", nullable: false),
+                    PatientId = table.Column<int>(type: "int", nullable: false),
+                    BandId = table.Column<int>(type: "int", nullable: false),
                     GhiChu = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -402,16 +402,16 @@ namespace FHealthSphere.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_HealthRecords", x => x.ID);
+                    table.PrimaryKey("PK_HealthRecords", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_HealthRecords_Bands_BandID",
-                        column: x => x.BandID,
+                        name: "FK_HealthRecords_Bands_BandId",
+                        column: x => x.BandId,
                         principalTable: "Bands",
-                        principalColumn: "ID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_HealthRecords_Users_PatientID",
-                        column: x => x.PatientID,
+                        name: "FK_HealthRecords_Users_PatientId",
+                        column: x => x.PatientId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -421,12 +421,12 @@ namespace FHealthSphere.Migrations
                 name: "NotificationWatchers",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    WatcherID = table.Column<int>(type: "int", nullable: false),
+                    WatcherId = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<bool>(type: "bit", nullable: false),
                     Time = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    NotificationID = table.Column<int>(type: "int", nullable: false),
+                    NotificationId = table.Column<int>(type: "int", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -436,18 +436,18 @@ namespace FHealthSphere.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_NotificationWatchers", x => x.ID);
+                    table.PrimaryKey("PK_NotificationWatchers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_NotificationWatchers_NotificationSystems_NotificationID",
-                        column: x => x.NotificationID,
+                        name: "FK_NotificationWatchers_NotificationSystems_NotificationId",
+                        column: x => x.NotificationId,
                         principalTable: "NotificationSystems",
-                        principalColumn: "ID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_NotificationWatchers_Watchers_WatcherID",
-                        column: x => x.WatcherID,
+                        name: "FK_NotificationWatchers_Watchers_WatcherId",
+                        column: x => x.WatcherId,
                         principalTable: "Watchers",
-                        principalColumn: "ID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -455,13 +455,13 @@ namespace FHealthSphere.Migrations
                 name: "RecordMetricItems",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RecordID = table.Column<int>(type: "int", nullable: false),
-                    MetricID = table.Column<int>(type: "int", nullable: false),
+                    RecordId = table.Column<int>(type: "int", nullable: false),
+                    MetricId = table.Column<int>(type: "int", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    HealthRecordID = table.Column<int>(type: "int", nullable: false),
+                    HealthRecordId = table.Column<int>(type: "int", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -471,75 +471,75 @@ namespace FHealthSphere.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RecordMetricItems", x => x.ID);
+                    table.PrimaryKey("PK_RecordMetricItems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_RecordMetricItems_HealthRecords_HealthRecordID",
-                        column: x => x.HealthRecordID,
+                        name: "FK_RecordMetricItems_HealthRecords_HealthRecordId",
+                        column: x => x.HealthRecordId,
                         principalTable: "HealthRecords",
-                        principalColumn: "ID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_RecordMetricItems_Metrics_MetricID",
-                        column: x => x.MetricID,
+                        name: "FK_RecordMetricItems_Metrics_MetricId",
+                        column: x => x.MetricId,
                         principalTable: "Metrics",
-                        principalColumn: "ID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bands_BandBrandID",
+                name: "IX_Bands_BandBrandId",
                 table: "Bands",
-                column: "BandBrandID");
+                column: "BandBrandId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bands_PatientID",
+                name: "IX_Bands_PatientId",
                 table: "Bands",
-                column: "PatientID");
+                column: "PatientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_HealthRecords_BandID",
+                name: "IX_HealthRecords_BandId",
                 table: "HealthRecords",
-                column: "BandID");
+                column: "BandId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_HealthRecords_PatientID",
+                name: "IX_HealthRecords_PatientId",
                 table: "HealthRecords",
-                column: "PatientID");
+                column: "PatientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Metrics_MetricGroupID",
+                name: "IX_Metrics_MetricGroupId",
                 table: "Metrics",
-                column: "MetricGroupID");
+                column: "MetricGroupId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NotificationSystems_AccountID",
+                name: "IX_NotificationSystems_AccountId",
                 table: "NotificationSystems",
-                column: "AccountID");
+                column: "AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NotificationWatchers_NotificationID",
+                name: "IX_NotificationWatchers_NotificationId",
                 table: "NotificationWatchers",
-                column: "NotificationID");
+                column: "NotificationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NotificationWatchers_WatcherID",
+                name: "IX_NotificationWatchers_WatcherId",
                 table: "NotificationWatchers",
-                column: "WatcherID");
+                column: "WatcherId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PatientInformations_AccountID",
+                name: "IX_PatientInformations_AccountId",
                 table: "PatientInformations",
-                column: "AccountID");
+                column: "AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RecordMetricItems_HealthRecordID",
+                name: "IX_RecordMetricItems_HealthRecordId",
                 table: "RecordMetricItems",
-                column: "HealthRecordID");
+                column: "HealthRecordId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RecordMetricItems_MetricID",
+                name: "IX_RecordMetricItems_MetricId",
                 table: "RecordMetricItems",
-                column: "MetricID");
+                column: "MetricId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
@@ -581,14 +581,14 @@ namespace FHealthSphere.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Watchers_PatientID",
+                name: "IX_Watchers_PatientId",
                 table: "Watchers",
-                column: "PatientID");
+                column: "PatientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Watchers_RelativeID",
+                name: "IX_Watchers_RelativeId",
                 table: "Watchers",
-                column: "RelativeID");
+                column: "RelativeId");
         }
 
         /// <inheritdoc />
