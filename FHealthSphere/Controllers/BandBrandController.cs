@@ -11,14 +11,14 @@ namespace FHealthSphere.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class BandBrandController : ControllerBase
+    public class BandBrandsController : ControllerBase
     {
         private readonly IBandBrandService _brandService;
-        public BandBrandController(IBandBrandService brandService)
+        public BandBrandsController(IBandBrandService brandService)
         {
             _brandService = brandService;
         }
-        [HttpGet("Brand")]
+        [HttpGet]
         public async Task<ActionResult<BasePaginatedList<BandBrand>>> GetAllBandBrand(int pageNumber, int pageSize)
         {
             try
@@ -31,7 +31,7 @@ namespace FHealthSphere.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpPost("new-Brand")]
+        [HttpPost]
         public async Task<IActionResult> AddBandBrand([FromBody] CreateBandBrandModel model)
         {
             try
