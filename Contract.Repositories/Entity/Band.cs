@@ -13,6 +13,7 @@ namespace Contract.Repositories.Entity
         [Key]
         public int Id { get; set; }
         public int PatientId { get; set; }
+        public int BandBrandId { get; set; }
         public string Image { get; set; }
 
         public virtual Account Patient { get; set; }

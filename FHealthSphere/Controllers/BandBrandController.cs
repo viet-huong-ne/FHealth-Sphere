@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.BandBrandModelViews;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace FHealthSphere.Controllers
 {
@@ -25,7 +26,7 @@ namespace FHealthSphere.Controllers
                 var Brands = await _brandService.GetAllBandBrand(pageNumber, pageSize);
                 return Ok(BaseResponse<BasePaginatedList<BandBrand>>.OkResponse(Brands));
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -38,9 +39,63 @@ namespace FHealthSphere.Controllers
                 var brand = await _brandService.CreateBandBrand(model);
                 return Ok(BaseResponse<BandBrand>.OkResponse(brand)); // return band brand created
             }
-            catch (Exception ex) 
-            { 
+            catch (Exception ex)
+            {
                 return BadRequest(ex.Message);
+            }
+        }
+        // PUT: api/BandBrands/{id}
+        [HttpPut("{id}")]
+        public async Task<ActionResult<BandBrand>> UpdateBandBrand(int id, [FromBody] UpdateBandBrandModel model)
+        {
+            try
+            {
+                if (model == null)
+                {
+                    return BadRequest("Request body is required.");
+                }
+
+                var brand = await _brandService.UpdateBandBrand(id, model);
+                return Ok(BaseResponse<BandBrand>.OkResponse(brand));
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to update BandBrand with ID {id}: {ex.Message}");
+            }
+        }
+
+        // DELETE: api/BandBrands/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBandBrand(int id)
+        {
+            try
+            {
+                var result = await _brandService.DeleteBandBrand(id);
+                if (!result)
+                {
+                    return NotFound($"BandBrand with ID {id} not found or already deleted.");
+                }
+                return Ok($"BandBrand with ID {id} successfully soft deleted.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to delete BandBrand with ID {id}: {ex.Message}");
             }
         }
 
