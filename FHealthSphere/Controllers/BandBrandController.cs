@@ -31,6 +31,7 @@ namespace FHealthSphere.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpPost]
         public async Task<IActionResult> AddBandBrand([FromBody] CreateBandBrandModel model)
         {

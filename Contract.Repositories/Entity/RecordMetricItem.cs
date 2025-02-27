@@ -14,6 +14,7 @@ namespace Contract.Repositories.Entity
         [Key]
         public int Id { get; set; }
         public int RecordId { get; set; }
+        public int HealthRecordId { get; set; }
         public int MetricId { get; set; }
         public string Value { get; set; }
         public string Type { get; set; }

@@ -10,7 +10,7 @@ namespace FHealthSphere.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Thêm authorization nếu cần
+
     public class MetricGroupsController : ControllerBase
     {
         private readonly IMetricGroupService _metricGroupService;

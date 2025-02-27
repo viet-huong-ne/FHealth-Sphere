@@ -6,67 +6,88 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Contract.Repositories.Interface;
 using Contract.Services.Interface;
+using Microsoft.Extensions.Logging;
 
 namespace FHealthSphere.Services.Services
 {
     public class RecordMetricItemService : IRecordMetricItemService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<RecordMetricItemService> _logger;
 
-        public RecordMetricItemService(IUnitOfWork unitOfWork)
+        public RecordMetricItemService(ILogger<RecordMetricItemService> logger, IUnitOfWork unitOfWork)
         {
-            _unitOfWork = unitOfWork;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
 
         public async Task<RecordMetricItem> CreateRecordMetricItem(CreateRecordMetricItemModel model)
         {
-            if (model == null)
+            try
             {
-                throw new ArgumentNullException(nameof(model), "RecordMetricItem data is required.");
+                _logger.LogInformation("Attempting to create RecordMetricItem with RecordId: {RecordId}, HealthRecordId: {HealthRecordId}, MetricId: {MetricId}", model.RecordId, model.HealthRecordId, model.MetricId);
+
+                if (model == null)
+                {
+                    throw new ArgumentNullException(nameof(model), "RecordMetricItem data is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.Value))
+                {
+                    throw new ArgumentException("Value is required.", nameof(model.Value));
+                }
+
+                if (string.IsNullOrWhiteSpace(model.Type))
+                {
+                    throw new ArgumentException("Type is required.", nameof(model.Type));
+                }
+
+                var healthRecordExists = await _unitOfWork.GetRepository<HealthRecord>()
+                    .Entities
+                    .AnyAsync(hr => hr.Id == model.HealthRecordId && !hr.DeletedTime.HasValue);
+                if (!healthRecordExists)
+                {
+                    throw new KeyNotFoundException($"HealthRecord with ID {model.HealthRecordId} not found.");
+                }
+
+                var metricExists = await _unitOfWork.GetRepository<Metric>()
+                    .Entities
+                    .AnyAsync(m => m.Id == model.MetricId && !m.DeletedTime.HasValue);
+                if (!metricExists)
+                {
+                    throw new KeyNotFoundException($"Metric with ID {model.MetricId} not found.");
+                }
+
+                // Kiểm tra duy nhất RecordId nếu cần (tùy ý)
+                var existingRecord = await _unitOfWork.GetRepository<RecordMetricItem>()
+                    .Entities
+                    .FirstOrDefaultAsync(ri => ri.RecordId == model.RecordId && !ri.DeletedTime.HasValue);
+                if (existingRecord != null)
+                {
+                    throw new InvalidOperationException($"RecordMetricItem with RecordId {model.RecordId} already exists.");
+                }
+
+                var recordMetricItem = new RecordMetricItem
+                {
+                    RecordId = model.RecordId, // Gán giá trị tùy chỉnh
+                    HealthRecordId = model.HealthRecordId,
+                    MetricId = model.MetricId,
+                    Value = model.Value.Trim(),
+                    Type = model.Type.Trim(),
+                    CreatedBy = "System",
+                    CreatedTime = DateTimeOffset.Now,
+                    LastUpdatedTime = DateTimeOffset.Now
+                };
+
+                await _unitOfWork.GetRepository<RecordMetricItem>().InsertAsync(recordMetricItem);
+                await _unitOfWork.SaveAsync();
+                return recordMetricItem;
             }
-
-            if (string.IsNullOrWhiteSpace(model.Value))
+            catch (Exception ex)
             {
-                throw new ArgumentException("Value is required.", nameof(model.Value));
+                _logger.LogError(ex, "Failed to create RecordMetricItem: {Message}", ex.InnerException?.Message ?? ex.Message);
+                throw;
             }
-
-            if (string.IsNullOrWhiteSpace(model.Type))
-            {
-                throw new ArgumentException("Type is required.", nameof(model.Type));
-            }
-
-            // Kiểm tra RecordId tồn tại
-            var healthRecordExists = await _unitOfWork.GetRepository<HealthRecord>()
-                .Entities
-                .AnyAsync(hr => hr.Id == model.RecordId && !hr.DeletedTime.HasValue);
-            if (!healthRecordExists)
-            {
-                throw new KeyNotFoundException($"HealthRecord with ID {model.RecordId} not found.");
-            }
-
-            // Kiểm tra MetricId tồn tại
-            var metricExists = await _unitOfWork.GetRepository<Metric>()
-                .Entities
-                .AnyAsync(m => m.Id == model.MetricId && !m.DeletedTime.HasValue);
-            if (!metricExists)
-            {
-                throw new KeyNotFoundException($"Metric with ID {model.MetricId} not found.");
-            }
-
-            var recordMetricItem = new RecordMetricItem
-            {
-                RecordId = model.RecordId,
-                MetricId = model.MetricId,
-                Value = model.Value.Trim(),
-                Type = model.Type.Trim(),
-                CreatedBy = "System", // Nên lấy từ context người dùng hiện tại nếu có
-                CreatedTime = DateTimeOffset.Now,
-                LastUpdatedTime = DateTimeOffset.Now
-            };
-
-            await _unitOfWork.GetRepository<RecordMetricItem>().InsertAsync(recordMetricItem);
-            await _unitOfWork.SaveAsync();
-            return recordMetricItem;
         }
 
         public async Task<BasePaginatedList<RecordMetricItem>> GetAllRecordMetricItems(int pageNumber, int pageSize)
@@ -95,64 +116,90 @@ namespace FHealthSphere.Services.Services
             return new BasePaginatedList<RecordMetricItem>(recordMetricItems, totalCount, pageNumber, pageSize);
         }
 
+
         public async Task<RecordMetricItem> UpdateRecordMetricItem(int id, UpdateRecordMetricItemModel model)
         {
-            if (model == null)
+            try
             {
-                throw new ArgumentNullException(nameof(model), "Update data is required.");
-            }
+                _logger.LogInformation("Attempting to update RecordMetricItem with ID: {Id}", id);
 
-            var recordMetricItem = await _unitOfWork.GetRepository<RecordMetricItem>()
-                .Entities
-                .FirstOrDefaultAsync(r => r.Id == id && !r.DeletedTime.HasValue);
-
-            if (recordMetricItem == null)
-            {
-                throw new KeyNotFoundException($"RecordMetricItem with ID {id} not found or already deleted.");
-            }
-
-            // Kiểm tra RecordId nếu được cập nhật
-            if (model.RecordId.HasValue)
-            {
-                var healthRecordExists = await _unitOfWork.GetRepository<HealthRecord>()
-                    .Entities
-                    .AnyAsync(hr => hr.Id == model.RecordId.Value && !hr.DeletedTime.HasValue);
-                if (!healthRecordExists)
+                if (model == null)
                 {
-                    throw new KeyNotFoundException($"HealthRecord with ID {model.RecordId.Value} not found.");
+                    throw new ArgumentNullException(nameof(model), "Update data is required.");
                 }
-                recordMetricItem.RecordId = model.RecordId.Value;
-            }
 
-            // Kiểm tra MetricId nếu được cập nhật
-            if (model.MetricId.HasValue)
-            {
-                var metricExists = await _unitOfWork.GetRepository<Metric>()
+                var recordMetricItem = await _unitOfWork.GetRepository<RecordMetricItem>()
                     .Entities
-                    .AnyAsync(m => m.Id == model.MetricId.Value && !m.DeletedTime.HasValue);
-                if (!metricExists)
+                    .FirstOrDefaultAsync(ri => ri.Id == id && !ri.DeletedTime.HasValue);
+
+                if (recordMetricItem == null)
                 {
-                    throw new KeyNotFoundException($"Metric with ID {model.MetricId.Value} not found.");
+                    throw new KeyNotFoundException($"RecordMetricItem with ID {id} not found or already deleted.");
                 }
-                recordMetricItem.MetricId = model.MetricId.Value;
-            }
 
-            if (!string.IsNullOrWhiteSpace(model.Value))
+                // Kiểm tra sự tồn tại của HealthRecordId nếu được cập nhật
+                if (model.HealthRecordId.HasValue)
+                {
+                    var healthRecordExists = await _unitOfWork.GetRepository<HealthRecord>()
+                        .Entities
+                        .AnyAsync(hr => hr.Id == model.HealthRecordId.Value && !hr.DeletedTime.HasValue);
+                    if (!healthRecordExists)
+                    {
+                        throw new KeyNotFoundException($"HealthRecord with ID {model.HealthRecordId.Value} not found.");
+                    }
+                    recordMetricItem.HealthRecordId = model.HealthRecordId.Value;
+                }
+
+                // Kiểm tra sự tồn tại của MetricId nếu được cập nhật
+                if (model.MetricId.HasValue)
+                {
+                    var metricExists = await _unitOfWork.GetRepository<Metric>()
+                        .Entities
+                        .AnyAsync(m => m.Id == model.MetricId.Value && !m.DeletedTime.HasValue);
+                    if (!metricExists)
+                    {
+                        throw new KeyNotFoundException($"Metric with ID {model.MetricId.Value} not found.");
+                    }
+                    recordMetricItem.MetricId = model.MetricId.Value;
+                }
+
+                // Kiểm tra duy nhất của RecordId nếu được cập nhật (tùy chọn)
+                if (model.RecordId.HasValue && model.RecordId.Value != recordMetricItem.RecordId)
+                {
+                    var existingRecord = await _unitOfWork.GetRepository<RecordMetricItem>()
+                        .Entities
+                        .FirstOrDefaultAsync(ri => ri.RecordId == model.RecordId.Value && ri.Id != id && !ri.DeletedTime.HasValue);
+                    if (existingRecord != null)
+                    {
+                        throw new InvalidOperationException($"RecordMetricItem with RecordId {model.RecordId.Value} already exists.");
+                    }
+                    recordMetricItem.RecordId = model.RecordId.Value;
+                }
+
+                // Cập nhật các trường khác nếu có
+                if (!string.IsNullOrWhiteSpace(model.Value))
+                {
+                    recordMetricItem.Value = model.Value.Trim();
+                }
+
+                if (!string.IsNullOrWhiteSpace(model.Type))
+                {
+                    recordMetricItem.Type = model.Type.Trim();
+                }
+
+                // Cập nhật metadata
+                recordMetricItem.LastUpdatedTime = DateTimeOffset.Now;
+                recordMetricItem.LastUpdatedBy = "System"; // Nên lấy từ context người dùng hiện tại nếu có
+
+                await _unitOfWork.GetRepository<RecordMetricItem>().UpdateAsync(recordMetricItem);
+                await _unitOfWork.SaveAsync();
+                return recordMetricItem;
+            }
+            catch (Exception ex)
             {
-                recordMetricItem.Value = model.Value.Trim();
+                _logger.LogError(ex, "Failed to update RecordMetricItem with ID {Id}: {Message}", id, ex.InnerException?.Message ?? ex.Message);
+                throw;
             }
-
-            if (!string.IsNullOrWhiteSpace(model.Type))
-            {
-                recordMetricItem.Type = model.Type.Trim();
-            }
-
-            recordMetricItem.LastUpdatedTime = DateTimeOffset.Now;
-            recordMetricItem.LastUpdatedBy = "System"; // Nên lấy từ context người dùng hiện tại nếu có
-
-            await _unitOfWork.GetRepository<RecordMetricItem>().UpdateAsync(recordMetricItem);
-            await _unitOfWork.SaveAsync();
-            return recordMetricItem;
         }
 
         public async Task<bool> DeleteRecordMetricItem(int id)

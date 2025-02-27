@@ -6,17 +6,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Contract.Repositories.Interface;
-using Services.Service;
+using Microsoft.Extensions.Logging;
+using Contract.Services.Interface;
 
-namespace FHealthSphere.Services.Services
+namespace Services.Service
 {
     public class BandService : IBandService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<BandService> _logger;
 
-        public BandService(IUnitOfWork unitOfWork)
+        public BandService(IUnitOfWork unitOfWork, ILogger<BandService> logger)
         {
-            _unitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<Band> CreateBand(CreateBandModel model)
@@ -59,17 +62,33 @@ namespace FHealthSphere.Services.Services
 
         public async Task<BasePaginatedList<Band>> GetAllBands(int pageNumber, int pageSize)
         {
-            if (pageNumber < 1) pageNumber = 1;
-            if (pageSize < 1) pageSize = 10;
+            try
+            {
+                _logger.LogInformation("Fetching all Bands with pageNumber: {PageNumber}, pageSize: {PageSize}", pageNumber, pageSize);
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageSize < 1) pageSize = 10;
 
-            var query = _unitOfWork.GetRepository<Band>().Entities
-                .Where(b => !b.DeletedTime.HasValue)
-                .OrderByDescending(b => b.CreatedTime);
+                var bandsQuery = _unitOfWork.GetRepository<Band>()
+                    .Entities
+                    .Where(b => !b.DeletedTime.HasValue)
+                    .OrderByDescending(b => b.CreatedTime);
 
-            var totalCount = await query.CountAsync();
-            var bands = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+                int totalCount = await bandsQuery.CountAsync();
 
-            return new BasePaginatedList<Band>(bands, totalCount, pageNumber, pageSize);
+                var bands = await bandsQuery
+                    .Include(b => b.Patient)
+                    .Include(b => b.BandBrand)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return new BasePaginatedList<Band>(bands, totalCount, pageNumber, pageSize);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch Bands: {Message}", ex.Message);
+                throw;
+            }
         }
 
         public async Task<Band> UpdateBand(int id, UpdateBandModel model)

@@ -9,8 +9,11 @@ namespace ModelViews.RecordMetricItemModelViews
 {
     public class CreateRecordMetricItemModel
     {
+
         [Required(ErrorMessage = "RecordId is required.")]
         public int RecordId { get; set; }
+        [Required(ErrorMessage = "HealthRecordId is required.")]
+        public int HealthRecordId { get; set; }
 
         [Required(ErrorMessage = "MetricId is required.")]
         public int MetricId { get; set; }

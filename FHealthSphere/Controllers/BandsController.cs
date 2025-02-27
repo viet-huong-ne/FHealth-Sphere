@@ -11,7 +11,7 @@ namespace FHealthSphere.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Thêm authorization nếu cần
+
     public class BandsController : ControllerBase
     {
         private readonly IBandService _bandService;

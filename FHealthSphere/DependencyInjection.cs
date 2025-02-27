@@ -6,6 +6,7 @@ using Contract.Services.Interface;
 using Services;
 using Services.Service;
 using Repositories.Base;
+using FHealthSphere.Services.Services;
 
 namespace XuongMayBE.API
 {
@@ -45,7 +46,13 @@ namespace XuongMayBE.API
         public static void AddServices(this IServiceCollection services)
         {
             services
-                .AddScoped<IBandBrandService, BandBrandService>();
+         .AddScoped<IBandBrandService, BandBrandService>()
+         .AddScoped<IHealthRecordService, HealthRecordService>()
+         .AddScoped<IMetricGroupService, MetricGroupService>()
+         .AddScoped<IMetricService, MetricService>()
+         .AddScoped<IRecordMetricItemService, RecordMetricItemService>()
+         .AddScoped<IBandService, BandService>();
+
         }
     }
 }

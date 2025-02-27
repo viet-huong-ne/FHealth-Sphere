@@ -10,7 +10,7 @@ namespace FHealthSphere.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Thêm authorization nếu cần
+
     public class RecordMetricItemsController : ControllerBase
     {
         private readonly IRecordMetricItemService _recordMetricItemService;
@@ -35,7 +35,6 @@ namespace FHealthSphere.Controllers
             }
         }
 
-        // POST: api/RecordMetricItems
         [HttpPost]
         public async Task<ActionResult<RecordMetricItem>> CreateRecordMetricItem([FromBody] CreateRecordMetricItemModel model)
         {
@@ -61,9 +60,13 @@ namespace FHealthSphere.Controllers
             {
                 return NotFound(ex.Message);
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Failed to create RecordMetricItem: {ex.Message}");
+                return StatusCode(500, $"Failed to create RecordMetricItem: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
@@ -93,9 +96,13 @@ namespace FHealthSphere.Controllers
             {
                 return NotFound(ex.Message);
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Failed to update RecordMetricItem with ID {id}: {ex.Message}");
+                return StatusCode(500, $"Failed to update RecordMetricItem with ID {id}: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
