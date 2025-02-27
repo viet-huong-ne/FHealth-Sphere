@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Contract.Repositories.Interface;
 using Contract.Services.Interface;
+using Microsoft.Extensions.Logging;
 
 namespace FHealthSphere.Services.Services
 {
@@ -13,9 +14,12 @@ namespace FHealthSphere.Services.Services
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public MetricGroupService(IUnitOfWork unitOfWork)
+        private readonly ILogger<MetricGroupService> _logger;
+
+        public MetricGroupService(IUnitOfWork unitOfWork, ILogger<MetricGroupService> logger)
         {
-            _unitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<MetricGroup> CreateMetricGroup(CreateMetricGroupModel model)
@@ -70,7 +74,31 @@ namespace FHealthSphere.Services.Services
 
             return new BasePaginatedList<MetricGroup>(metricGroups, totalCount, pageNumber, pageSize);
         }
+        public async Task<MetricGroup> GetMetricGroupById(int id)
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to get MetricGroup with ID: {Id}", id);
 
+                var metricGroup = await _unitOfWork.GetRepository<MetricGroup>()
+                    .Entities
+                    .Where(mg => mg.Id == id && !mg.DeletedTime.HasValue)
+                    .Include(mg => mg.Tags)
+                    .FirstOrDefaultAsync();
+
+                if (metricGroup == null)
+                {
+                    throw new KeyNotFoundException($"MetricGroup with ID {id} not found or already deleted.");
+                }
+
+                return metricGroup;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get MetricGroup with ID {Id}: {Message}", id, ex.Message);
+                throw;
+            }
+        }
         public async Task<MetricGroup> UpdateMetricGroup(int id, UpdateMetricGroupModel model)
         {
             if (model == null)
@@ -128,5 +156,7 @@ namespace FHealthSphere.Services.Services
             await _unitOfWork.SaveAsync();
             return true;
         }
+
+
     }
 }

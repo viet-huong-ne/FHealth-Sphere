@@ -15,5 +15,6 @@ namespace Contract.Services.Interface
         Task<BasePaginatedList<HealthRecord>> GetAllHealthRecords(int pageNumber, int pageSize);
         Task<HealthRecord> UpdateHealthRecord(int id, UpdateHealthRecordModel model);
         Task<bool> DeleteHealthRecord(int id);
+        Task<HealthRecord> GetHealthRecordById(int id);
     }
 }

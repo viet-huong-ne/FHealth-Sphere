@@ -116,7 +116,32 @@ namespace FHealthSphere.Services.Services
             return new BasePaginatedList<RecordMetricItem>(recordMetricItems, totalCount, pageNumber, pageSize);
         }
 
+        public async Task<RecordMetricItem> GetRecordMetricItemById(int id)
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to get RecordMetricItem with ID: {Id}", id);
 
+                var recordMetricItem = await _unitOfWork.GetRepository<RecordMetricItem>()
+                    .Entities
+                    .Where(ri => ri.Id == id && !ri.DeletedTime.HasValue)
+                    .Include(ri => ri.HealthRecord)
+                    .Include(ri => ri.Metric)
+                    .FirstOrDefaultAsync();
+
+                if (recordMetricItem == null)
+                {
+                    throw new KeyNotFoundException($"RecordMetricItem with ID {id} not found or already deleted.");
+                }
+
+                return recordMetricItem;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get RecordMetricItem with ID {Id}: {Message}", id, ex.Message);
+                throw;
+            }
+        }
         public async Task<RecordMetricItem> UpdateRecordMetricItem(int id, UpdateRecordMetricItemModel model)
         {
             try
@@ -220,5 +245,12 @@ namespace FHealthSphere.Services.Services
             await _unitOfWork.SaveAsync();
             return true;
         }
+
+        public Task<HealthRecord> GetHealthRecordById(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+
     }
 }

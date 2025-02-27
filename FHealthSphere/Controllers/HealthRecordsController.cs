@@ -33,6 +33,23 @@ namespace FHealthSphere.Controllers
                 return StatusCode(500, $"An error occurred while retrieving HealthRecords: {ex.Message}");
             }
         }
+        [HttpGet("{id}")] // Thêm phương thức Get by Id
+        public async Task<ActionResult<HealthRecord>> GetHealthRecordById(int id)
+        {
+            try
+            {
+                var healthRecord = await _healthRecordService.GetHealthRecordById(id);
+                return Ok(BaseResponse<HealthRecord>.OkResponse(healthRecord));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to get HealthRecord with ID {id}: {ex.Message}");
+            }
+        }
 
         // POST: api/HealthRecords
         [HttpPost]

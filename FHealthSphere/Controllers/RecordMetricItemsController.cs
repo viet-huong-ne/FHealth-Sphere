@@ -34,6 +34,23 @@ namespace FHealthSphere.Controllers
                 return StatusCode(500, $"An error occurred while retrieving RecordMetricItems: {ex.Message}");
             }
         }
+        [HttpGet("{id}")] // Thêm phương thức Get by Id
+        public async Task<ActionResult<RecordMetricItem>> GetRecordMetricItemById(int id)
+        {
+            try
+            {
+                var recordMetricItem = await _recordMetricItemService.GetRecordMetricItemById(id);
+                return Ok(BaseResponse<RecordMetricItem>.OkResponse(recordMetricItem));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to get RecordMetricItem with ID {id}: {ex.Message}");
+            }
+        }
 
         [HttpPost]
         public async Task<ActionResult<RecordMetricItem>> CreateRecordMetricItem([FromBody] CreateRecordMetricItemModel model)

@@ -4,6 +4,7 @@ using Core.Base;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.BandBrandModelViews;
+using Services.Service;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -31,7 +32,23 @@ namespace FHealthSphere.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        [HttpGet("{id}")] // Thêm phương thức Get by Id
+        public async Task<ActionResult<BandBrand>> GetBandBrandById(int id)
+        {
+            try
+            {
+                var bandBrand = await _brandService.GetBandBrandById(id);
+                return Ok(BaseResponse<BandBrand>.OkResponse(bandBrand));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to get BandBrand with ID {id}: {ex.Message}");
+            }
+        }
         [HttpPost]
         public async Task<IActionResult> AddBandBrand([FromBody] CreateBandBrandModel model)
         {

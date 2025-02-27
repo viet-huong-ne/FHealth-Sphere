@@ -6,16 +6,19 @@ using Microsoft.EntityFrameworkCore;
 using Contract.Repositories.Interface;
 using Contract.Services.Interface;
 using ModelViews.HealthRecordModelViews;
+using Microsoft.Extensions.Logging;
 
 namespace FHealthSphere.Services.Services
 {
     public class HealthRecordService : IHealthRecordService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<HealthRecordService> _logger;
 
-        public HealthRecordService(IUnitOfWork unitOfWork)
+        public HealthRecordService(IUnitOfWork unitOfWork, ILogger<HealthRecordService> logger)
         {
-            _unitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<HealthRecord> CreateHealthRecord(CreateHealthRecordModel model)
@@ -84,6 +87,32 @@ namespace FHealthSphere.Services.Services
                 .ToListAsync();
 
             return new BasePaginatedList<HealthRecord>(healthRecords, totalCount, pageNumber, pageSize);
+        }
+        public async Task<HealthRecord> GetHealthRecordById(int id)
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to get HealthRecord with ID: {Id}", id);
+
+                var healthRecord = await _unitOfWork.GetRepository<HealthRecord>()
+                    .Entities
+                    .Where(hr => hr.Id == id && !hr.DeletedTime.HasValue)
+                    .Include(hr => hr.Patient)
+                    .Include(hr => hr.Band)
+                    .FirstOrDefaultAsync();
+
+                if (healthRecord == null)
+                {
+                    throw new KeyNotFoundException($"HealthRecord with ID {id} not found or already deleted.");
+                }
+
+                return healthRecord;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get HealthRecord with ID {Id}: {Message}", id, ex.Message);
+                throw;
+            }
         }
 
         public async Task<HealthRecord> UpdateHealthRecord(int id, UpdateHealthRecordModel model)
@@ -159,5 +188,6 @@ namespace FHealthSphere.Services.Services
             await _unitOfWork.SaveAsync();
             return true;
         }
+
     }
 }

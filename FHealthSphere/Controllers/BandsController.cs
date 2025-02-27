@@ -35,6 +35,23 @@ namespace FHealthSphere.Controllers
                 return StatusCode(500, $"An error occurred while retrieving Bands: {ex.Message}");
             }
         }
+        [HttpGet("{id}")] // Thêm phương thức Get by Id
+        public async Task<ActionResult<Band>> GetBandById(int id)
+        {
+            try
+            {
+                var band = await _bandService.GetBandById(id);
+                return Ok(BaseResponse<Band>.OkResponse(band));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to get Band with ID {id}: {ex.Message}");
+            }
+        }
 
         // POST: api/Bands
         [HttpPost]

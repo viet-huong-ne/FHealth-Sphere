@@ -90,6 +90,32 @@ namespace Services.Service
                 throw;
             }
         }
+        public async Task<Band> GetBandById(int id)
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to get Band with ID: {Id}", id);
+
+                var band = await _unitOfWork.GetRepository<Band>()
+                    .Entities
+                    .Where(b => b.Id == id && !b.DeletedTime.HasValue)
+                    .Include(b => b.Patient)
+                    .Include(b => b.BandBrand)
+                    .FirstOrDefaultAsync();
+
+                if (band == null)
+                {
+                    throw new KeyNotFoundException($"Band with ID {id} not found or already deleted.");
+                }
+
+                return band;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get Band with ID {Id}: {Message}", id, ex.Message);
+                throw;
+            }
+        }
 
         public async Task<Band> UpdateBand(int id, UpdateBandModel model)
         {

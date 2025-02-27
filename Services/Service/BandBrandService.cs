@@ -86,6 +86,29 @@ namespace Services.Service
                 .ToListAsync();
             return new BasePaginatedList<BandBrand>(brands, TotalCount, pageNumber, pageSize);
         }
+        public async Task<BandBrand> GetBandBrandById(int id)
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to get BandBrand with ID: {Id}", id);
+
+                var bandBrand = await _unitOfWork.GetRepository<BandBrand>()
+                    .Entities
+                    .FirstOrDefaultAsync(bb => bb.Id == id && !bb.DeletedTime.HasValue);
+
+                if (bandBrand == null)
+                {
+                    throw new KeyNotFoundException($"BandBrand with ID {id} not found or already deleted.");
+                }
+
+                return bandBrand;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get BandBrand with ID {Id}: {Message}", id, ex.Message);
+                throw;
+            }
+        }
         public async Task<BandBrand> UpdateBandBrand(int id, CreateBandBrandModel model)
         {
             if (model == null || string.IsNullOrWhiteSpace(model.Name))
@@ -206,5 +229,6 @@ namespace Services.Service
                 throw new Exception($"Failed to update BandBrand with ID {id}.", ex);
             }
         }
+
     }
 }

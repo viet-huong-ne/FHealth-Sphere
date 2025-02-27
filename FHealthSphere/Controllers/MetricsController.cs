@@ -34,6 +34,23 @@ namespace FHealthSphere.Controllers
                 return StatusCode(500, $"An error occurred while retrieving Metrics: {ex.Message}");
             }
         }
+        [HttpGet("{id}")] // Thêm phương thức Get by Id
+        public async Task<ActionResult<Metric>> GetMetricById(int id)
+        {
+            try
+            {
+                var metric = await _metricService.GetMetricById(id);
+                return Ok(BaseResponse<Metric>.OkResponse(metric));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to get Metric with ID {id}: {ex.Message}");
+            }
+        }
 
         // POST: api/Metrics
         [HttpPost]
@@ -117,5 +134,6 @@ namespace FHealthSphere.Controllers
                 return StatusCode(500, $"Failed to delete Metric with ID {id}: {ex.Message}");
             }
         }
+
     }
 }

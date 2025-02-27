@@ -6,16 +6,19 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Contract.Repositories.Interface;
 using Contract.Services.Interface;
+using Microsoft.Extensions.Logging;
 
 namespace FHealthSphere.Services.Services
 {
     public class MetricService : IMetricService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<MetricService> _logger;
 
-        public MetricService(IUnitOfWork unitOfWork)
+        public MetricService(IUnitOfWork unitOfWork, ILogger<MetricService> logger)
         {
-            _unitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<Metric> CreateMetric(CreateMetricModel model)
@@ -84,6 +87,32 @@ namespace FHealthSphere.Services.Services
                 .ToListAsync();
 
             return new BasePaginatedList<Metric>(metrics, totalCount, pageNumber, pageSize);
+        }
+
+        public async Task<Metric> GetMetricById(int id)
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to get Metric with ID: {Id}", id);
+
+                var metric = await _unitOfWork.GetRepository<Metric>()
+                    .Entities
+                    .Where(m => m.Id == id && !m.DeletedTime.HasValue)
+                    .Include(m => m.MetricGroup)
+                    .FirstOrDefaultAsync();
+
+                if (metric == null)
+                {
+                    throw new KeyNotFoundException($"Metric with ID {id} not found or already deleted.");
+                }
+
+                return metric;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get Metric with ID {Id}: {Message}", id, ex.Message);
+                throw;
+            }
         }
 
         public async Task<Metric> UpdateMetric(int id, UpdateMetricModel model)
@@ -166,5 +195,6 @@ namespace FHealthSphere.Services.Services
             await _unitOfWork.SaveAsync();
             return true;
         }
+
     }
 }

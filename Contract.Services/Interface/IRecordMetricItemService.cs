@@ -15,5 +15,7 @@ namespace Contract.Services.Interface
         Task<BasePaginatedList<RecordMetricItem>> GetAllRecordMetricItems(int pageNumber, int pageSize);
         Task<RecordMetricItem> UpdateRecordMetricItem(int id, UpdateRecordMetricItemModel model);
         Task<bool> DeleteRecordMetricItem(int id);
+        Task<HealthRecord> GetHealthRecordById(int id);
+        Task<RecordMetricItem> GetRecordMetricItemById(int id);
     }
 }

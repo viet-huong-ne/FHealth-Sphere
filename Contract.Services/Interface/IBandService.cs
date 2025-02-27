@@ -15,5 +15,6 @@ namespace Contract.Services.Interface
         Task<BasePaginatedList<Band>> GetAllBands(int pageNumber, int pageSize);
         Task<Band> UpdateBand(int id, UpdateBandModel model);
         Task<bool> DeleteBand(int id);
+        Task<Band> GetBandById(int id);
     }
 }

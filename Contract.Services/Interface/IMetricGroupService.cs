@@ -15,5 +15,6 @@ namespace Contract.Services.Interface
         Task<BasePaginatedList<MetricGroup>> GetAllMetricGroups(int pageNumber, int pageSize);
         Task<MetricGroup> UpdateMetricGroup(int id, UpdateMetricGroupModel model);
         Task<bool> DeleteMetricGroup(int id);
+        Task<MetricGroup> GetMetricGroupById(int id);
     }
 }
