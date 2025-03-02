@@ -60,11 +60,11 @@ namespace Services.Service
             return band;
         }
 
-        public async Task<BasePaginatedList<Band>> GetAllBands(int pageNumber, int pageSize, int? patientId = null, int? bandBrandId = null, string image = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null)
+        public async Task<BasePaginatedList<Band>> GetAllBands(int pageNumber, int pageSize, int? patientId = null, int? bandBrandId = null, string image = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
         {
             try
             {
-                _logger.LogInformation("Fetching all Bands with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, PatientId: {PatientId}, BandBrandId: {BandBrandId}, Image: {Image}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}", pageNumber, pageSize, patientId, bandBrandId, image, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy);
+                _logger.LogInformation("Fetching all Bands with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, PatientId: {PatientId}, BandBrandId: {BandBrandId}, Image: {Image}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}, IsActive: {IsActive}", pageNumber, pageSize, patientId, bandBrandId, image, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
 
                 if (pageNumber < 1) pageNumber = 1;
                 if (pageSize < 1) pageSize = 10;
@@ -96,11 +96,11 @@ namespace Services.Service
                 }
                 if (updatedStartDate.HasValue)
                 {
-                    bandsQuery = bandsQuery.Where(b => b.LastUpdatedTime.Date >= updatedStartDate.Value.Date); // Không cần HasValue vì LastUpdatedTime không null
+                    bandsQuery = bandsQuery.Where(b => b.LastUpdatedTime.Date >= updatedStartDate.Value.Date);
                 }
                 if (updatedEndDate.HasValue)
                 {
-                    bandsQuery = bandsQuery.Where(b => b.LastUpdatedTime.Date <= updatedEndDate.Value.Date); // Không cần HasValue
+                    bandsQuery = bandsQuery.Where(b => b.LastUpdatedTime.Date <= updatedEndDate.Value.Date);
                 }
                 if (deletedStartDate.HasValue)
                 {
@@ -122,9 +122,13 @@ namespace Services.Service
                 {
                     bandsQuery = bandsQuery.Where(b => b.DeletedBy != null && b.DeletedBy.Contains(deletedBy));
                 }
+                if (isActive.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => (b.DeletedTime.HasValue == !isActive.Value));
+                }
 
-                // Loại bỏ các bản ghi bị soft delete nếu không có bộ lọc DeletedTime
-                if (!deletedStartDate.HasValue && !deletedEndDate.HasValue)
+                // Loại bỏ các bản ghi bị soft delete nếu không có bộ lọc DeletedTime hoặc isActive
+                if (!deletedStartDate.HasValue && !deletedEndDate.HasValue && !isActive.HasValue)
                 {
                     bandsQuery = bandsQuery.Where(b => !b.DeletedTime.HasValue);
                 }

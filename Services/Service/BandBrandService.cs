@@ -68,23 +68,120 @@ namespace Services.Service
             }
         }
 
-        public async Task<BasePaginatedList<BandBrand>> GetAllBandBrand(int pageNumber, int pageSize)
+        public async Task<BasePaginatedList<BandBrand>> GetAllBandBrands(int pageNumber, int pageSize, string name = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
         {
-            //get list band brand which aren't deleted and descending order
-            IQueryable<BandBrand> BandBrandsQuery = _unitOfWork.GetRepository<BandBrand>()
-                .Entities
-                .Where(p => !p.DeletedTime.HasValue)
-                .OrderByDescending(p => p.CreatedTime);
-            // count all brands that have not been deleted
-            int TotalCount = await BandBrandsQuery.CountAsync();
+            try
+            {
+                _logger.LogInformation("Fetching all BandBrands with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, Name: {Name}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}, IsActive: {IsActive}", pageNumber, pageSize, name, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
 
-            // get 
-            var brands = await BandBrandsQuery
-                .OrderBy(s => s.Id)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-            return new BasePaginatedList<BandBrand>(brands, TotalCount, pageNumber, pageSize);
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageSize < 1) pageSize = 10;
+
+                var bandsQuery = _unitOfWork.GetRepository<BandBrand>()
+                    .Entities
+                    .AsQueryable();
+
+                // Áp dụng bộ lọc
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    bandsQuery = bandsQuery.Where(b => b.NameBrand.Contains(name));
+                }
+                if (createdStartDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.CreatedTime.Date >= createdStartDate.Value.Date);
+                }
+                if (createdEndDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.CreatedTime.Date <= createdEndDate.Value.Date);
+                }
+                if (updatedStartDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.LastUpdatedTime.Date >= updatedStartDate.Value.Date);
+                }
+                if (updatedEndDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.LastUpdatedTime.Date <= updatedEndDate.Value.Date);
+                }
+                if (deletedStartDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.DeletedTime.HasValue && b.DeletedTime.Value.Date >= deletedStartDate.Value.Date);
+                }
+                if (deletedEndDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.DeletedTime.HasValue && b.DeletedTime.Value.Date <= deletedEndDate.Value.Date);
+                }
+                if (!string.IsNullOrWhiteSpace(createdBy))
+                {
+                    bandsQuery = bandsQuery.Where(b => b.CreatedBy != null && b.CreatedBy.Contains(createdBy));
+                }
+                if (!string.IsNullOrWhiteSpace(updatedBy))
+                {
+                    bandsQuery = bandsQuery.Where(b => b.LastUpdatedBy != null && b.LastUpdatedBy.Contains(updatedBy));
+                }
+                if (!string.IsNullOrWhiteSpace(deletedBy))
+                {
+                    bandsQuery = bandsQuery.Where(b => b.DeletedBy != null && b.DeletedBy.Contains(deletedBy));
+                }
+                if (isActive.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => (b.DeletedTime.HasValue == !isActive.Value));
+                }
+
+                // Loại bỏ các bản ghi bị soft delete nếu không có bộ lọc DeletedTime hoặc isActive
+                if (!deletedStartDate.HasValue && !deletedEndDate.HasValue && !isActive.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => !b.DeletedTime.HasValue);
+                }
+
+                // Áp dụng sắp xếp
+                if (!string.IsNullOrWhiteSpace(sortBy))
+                {
+                    switch (sortBy.ToLower())
+                    {
+                        case "namebrand":
+                            bandsQuery = sortOrder.ToLower() == "desc"
+                                ? bandsQuery.OrderByDescending(b => b.NameBrand)
+                                : bandsQuery.OrderBy(b => b.NameBrand);
+                            break;
+                        case "createdtime":
+                            bandsQuery = sortOrder.ToLower() == "desc"
+                                ? bandsQuery.OrderByDescending(b => b.CreatedTime)
+                                : bandsQuery.OrderBy(b => b.CreatedTime);
+                            break;
+                        case "lastupdatedtime":
+                            bandsQuery = sortOrder.ToLower() == "desc"
+                                ? bandsQuery.OrderByDescending(b => b.LastUpdatedTime)
+                                : bandsQuery.OrderBy(b => b.LastUpdatedTime);
+                            break;
+                        case "deletedtime":
+                            bandsQuery = sortOrder.ToLower() == "desc"
+                                ? bandsQuery.OrderByDescending(b => b.DeletedTime ?? DateTimeOffset.MinValue)
+                                : bandsQuery.OrderBy(b => b.DeletedTime ?? DateTimeOffset.MinValue);
+                            break;
+                        default:
+                            bandsQuery = bandsQuery.OrderByDescending(b => b.CreatedTime); // Mặc định
+                            break;
+                    }
+                }
+                else
+                {
+                    bandsQuery = bandsQuery.OrderByDescending(b => b.CreatedTime); // Mặc định
+                }
+
+                int totalCount = await bandsQuery.CountAsync();
+
+                var bands = await bandsQuery
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return new BasePaginatedList<BandBrand>(bands, totalCount, pageNumber, pageSize);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch BandBrands: {Message}", ex.Message);
+                throw;
+            }
         }
         public async Task<BandBrand> GetBandBrandById(int id)
         {

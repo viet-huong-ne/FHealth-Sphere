@@ -20,13 +20,69 @@ namespace FHealthSphere.Controllers
             _metricService = metricService;
         }
 
-        // GET: api/Metrics?pageNumber=1&pageSize=10
         [HttpGet]
-        public async Task<ActionResult<BasePaginatedList<Metric>>> GetAllMetrics([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<ActionResult<BasePaginatedList<Metric>>> GetAllMetrics(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string name = null,
+    [FromQuery] string unit = null,
+    [FromQuery] int? metricGroupId = null,
+    [FromQuery] string sortBy = null,
+    [FromQuery] string sortOrder = "asc",
+    [FromQuery] DateTime? createdStartDate = null,
+    [FromQuery] DateTime? createdEndDate = null,
+    [FromQuery] DateTime? updatedStartDate = null,
+    [FromQuery] DateTime? updatedEndDate = null,
+    [FromQuery] DateTime? deletedStartDate = null,
+    [FromQuery] DateTime? deletedEndDate = null,
+    [FromQuery] string createdBy = null,
+    [FromQuery] string updatedBy = null,
+    [FromQuery] string deletedBy = null,
+    [FromQuery] bool? isActive = null)
         {
             try
             {
-                var metrics = await _metricService.GetAllMetrics(pageNumber, pageSize);
+                // Validation định dạng ngày
+                if (createdStartDate.HasValue && !createdStartDate.Value.ToString("yyyy-MM-dd").Equals(createdStartDate.Value.ToString("yyyy-MM-dd")))
+                {
+                    return BadRequest("Invalid createdStartDate format. Use yyyy-MM-dd.");
+                }
+                if (createdEndDate.HasValue && !createdEndDate.Value.ToString("yyyy-MM-dd").Equals(createdEndDate.Value.ToString("yyyy-MM-dd")))
+                {
+                    return BadRequest("Invalid createdEndDate format. Use yyyy-MM-dd.");
+                }
+                if (updatedStartDate.HasValue && !updatedStartDate.Value.ToString("yyyy-MM-dd").Equals(updatedStartDate.Value.ToString("yyyy-MM-dd")))
+                {
+                    return BadRequest("Invalid updatedStartDate format. Use yyyy-MM-dd.");
+                }
+                if (updatedEndDate.HasValue && !updatedEndDate.Value.ToString("yyyy-MM-dd").Equals(updatedEndDate.Value.ToString("yyyy-MM-dd")))
+                {
+                    return BadRequest("Invalid updatedEndDate format. Use yyyy-MM-dd.");
+                }
+                if (deletedStartDate.HasValue && !deletedStartDate.Value.ToString("yyyy-MM-dd").Equals(deletedStartDate.Value.ToString("yyyy-MM-dd")))
+                {
+                    return BadRequest("Invalid deletedStartDate format. Use yyyy-MM-dd.");
+                }
+                if (deletedEndDate.HasValue && !deletedEndDate.Value.ToString("yyyy-MM-dd").Equals(deletedEndDate.Value.ToString("yyyy-MM-dd")))
+                {
+                    return BadRequest("Invalid deletedEndDate format. Use yyyy-MM-dd.");
+                }
+
+                // Validation khoảng thời gian
+                if (createdStartDate.HasValue && createdEndDate.HasValue && createdStartDate > createdEndDate)
+                {
+                    return BadRequest("createdStartDate must be less than or equal to createdEndDate.");
+                }
+                if (updatedStartDate.HasValue && updatedEndDate.HasValue && updatedStartDate > updatedEndDate)
+                {
+                    return BadRequest("updatedStartDate must be less than or equal to updatedEndDate.");
+                }
+                if (deletedStartDate.HasValue && deletedEndDate.HasValue && deletedStartDate > deletedEndDate)
+                {
+                    return BadRequest("deletedStartDate must be less than or equal to deletedEndDate.");
+                }
+
+                var metrics = await _metricService.GetAllMetrics(pageNumber, pageSize, name, unit, metricGroupId, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
                 return Ok(BaseResponse<BasePaginatedList<Metric>>.OkResponse(metrics));
             }
             catch (Exception ex)

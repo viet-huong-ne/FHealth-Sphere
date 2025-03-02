@@ -68,25 +68,154 @@ namespace FHealthSphere.Services.Services
             return metric;
         }
 
-        public async Task<BasePaginatedList<Metric>> GetAllMetrics(int pageNumber, int pageSize)
+        public async Task<BasePaginatedList<Metric>> GetAllMetrics(int pageNumber, int pageSize, string name = null, string unit = null, int? metricGroupId = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
         {
-            if (pageNumber < 1) pageNumber = 1;
-            if (pageSize < 1) pageSize = 10; // Default page size
+            try
+            {
+                _logger.LogInformation("Fetching all Metrics with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, Name: {Name}, Unit: {Unit}, MetricGroupId: {MetricGroupId}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}, IsActive: {IsActive}", pageNumber, pageSize, name, unit, metricGroupId, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
 
-            var metricsQuery = _unitOfWork.GetRepository<Metric>()
-                .Entities
-                .Where(m => !m.DeletedTime.HasValue)
-                .OrderByDescending(m => m.CreatedTime);
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageSize < 1) pageSize = 10;
 
-            int totalCount = await metricsQuery.CountAsync();
+                var metricsQuery = _unitOfWork.GetRepository<Metric>()
+                    .Entities
+                    .AsQueryable();
 
-            var metrics = await metricsQuery
-                .Include(m => m.MetricGroup)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+                // Áp dụng bộ lọc
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    metricsQuery = metricsQuery.Where(m => m.Name.Contains(name));
+                }
+                if (!string.IsNullOrWhiteSpace(unit))
+                {
+                    metricsQuery = metricsQuery.Where(m => m.Unit != null && m.Unit.Contains(unit));
+                }
+                if (metricGroupId.HasValue)
+                {
+                    metricsQuery = metricsQuery.Where(m => m.MetricGroupId == metricGroupId.Value);
+                }
+                if (createdStartDate.HasValue)
+                {
+                    metricsQuery = metricsQuery.Where(m => m.CreatedTime.Date >= createdStartDate.Value.Date);
+                }
+                if (createdEndDate.HasValue)
+                {
+                    metricsQuery = metricsQuery.Where(m => m.CreatedTime.Date <= createdEndDate.Value.Date);
+                }
+                if (updatedStartDate.HasValue)
+                {
+                    metricsQuery = metricsQuery.Where(m => m.LastUpdatedTime.Date >= updatedStartDate.Value.Date);
+                }
+                if (updatedEndDate.HasValue)
+                {
+                    metricsQuery = metricsQuery.Where(m => m.LastUpdatedTime.Date <= updatedEndDate.Value.Date);
+                }
+                if (deletedStartDate.HasValue)
+                {
+                    metricsQuery = metricsQuery.Where(m => m.DeletedTime.HasValue && m.DeletedTime.Value.Date >= deletedStartDate.Value.Date);
+                }
+                if (deletedEndDate.HasValue)
+                {
+                    metricsQuery = metricsQuery.Where(m => m.DeletedTime.HasValue && m.DeletedTime.Value.Date <= deletedEndDate.Value.Date);
+                }
+                if (!string.IsNullOrWhiteSpace(createdBy))
+                {
+                    metricsQuery = metricsQuery.Where(m => m.CreatedBy != null && m.CreatedBy.Contains(createdBy));
+                }
+                if (!string.IsNullOrWhiteSpace(updatedBy))
+                {
+                    metricsQuery = metricsQuery.Where(m => m.LastUpdatedBy != null && m.LastUpdatedBy.Contains(updatedBy));
+                }
+                if (!string.IsNullOrWhiteSpace(deletedBy))
+                {
+                    metricsQuery = metricsQuery.Where(m => m.DeletedBy != null && m.DeletedBy.Contains(deletedBy));
+                }
+                if (isActive.HasValue)
+                {
+                    metricsQuery = metricsQuery.Where(m => (m.DeletedTime.HasValue == !isActive.Value));
+                }
 
-            return new BasePaginatedList<Metric>(metrics, totalCount, pageNumber, pageSize);
+                // Loại bỏ các bản ghi bị soft delete nếu không có bộ lọc DeletedTime hoặc isActive
+                if (!deletedStartDate.HasValue && !deletedEndDate.HasValue && !isActive.HasValue)
+                {
+                    metricsQuery = metricsQuery.Where(m => !m.DeletedTime.HasValue);
+                }
+
+                // Áp dụng sắp xếp
+                if (!string.IsNullOrWhiteSpace(sortBy))
+                {
+                    switch (sortBy.ToLower())
+                    {
+                        case "name":
+                            metricsQuery = sortOrder.ToLower() == "desc"
+                                ? metricsQuery.OrderByDescending(m => m.Name)
+                                : metricsQuery.OrderBy(m => m.Name);
+                            break;
+                        case "unit":
+                            metricsQuery = sortOrder.ToLower() == "desc"
+                                ? metricsQuery.OrderByDescending(m => m.Unit)
+                                : metricsQuery.OrderBy(m => m.Unit);
+                            break;
+                        case "minvalue":
+                            metricsQuery = sortOrder.ToLower() == "desc"
+                                ? metricsQuery.OrderByDescending(m => m.MinValue)
+                                : metricsQuery.OrderBy(m => m.MinValue);
+                            break;
+                        case "maxvalue":
+                            metricsQuery = sortOrder.ToLower() == "desc"
+                                ? metricsQuery.OrderByDescending(m => m.MaxValue)
+                                : metricsQuery.OrderBy(m => m.MaxValue);
+                            break;
+                        case "defaultvalue":
+                            metricsQuery = sortOrder.ToLower() == "desc"
+                                ? metricsQuery.OrderByDescending(m => m.DefaultValue)
+                                : metricsQuery.OrderBy(m => m.DefaultValue);
+                            break;
+                        case "metricgroupid":
+                            metricsQuery = sortOrder.ToLower() == "desc"
+                                ? metricsQuery.OrderByDescending(m => m.MetricGroupId)
+                                : metricsQuery.OrderBy(m => m.MetricGroupId);
+                            break;
+                        case "createdtime":
+                            metricsQuery = sortOrder.ToLower() == "desc"
+                                ? metricsQuery.OrderByDescending(m => m.CreatedTime)
+                                : metricsQuery.OrderBy(m => m.CreatedTime);
+                            break;
+                        case "lastupdatedtime":
+                            metricsQuery = sortOrder.ToLower() == "desc"
+                                ? metricsQuery.OrderByDescending(m => m.LastUpdatedTime)
+                                : metricsQuery.OrderBy(m => m.LastUpdatedTime);
+                            break;
+                        case "deletedtime":
+                            metricsQuery = sortOrder.ToLower() == "desc"
+                                ? metricsQuery.OrderByDescending(m => m.DeletedTime ?? DateTimeOffset.MinValue)
+                                : metricsQuery.OrderBy(m => m.DeletedTime ?? DateTimeOffset.MinValue);
+                            break;
+                        default:
+                            metricsQuery = metricsQuery.OrderByDescending(m => m.CreatedTime); // Mặc định
+                            break;
+                    }
+                }
+                else
+                {
+                    metricsQuery = metricsQuery.OrderByDescending(m => m.CreatedTime); // Mặc định
+                }
+
+                int totalCount = await metricsQuery.CountAsync();
+
+                var metrics = await metricsQuery
+                    .Include(m => m.MetricGroup)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return new BasePaginatedList<Metric>(metrics, totalCount, pageNumber, pageSize);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch Metrics: {Message}", ex.Message);
+                throw;
+            }
         }
 
         public async Task<Metric> GetMetricById(int id)

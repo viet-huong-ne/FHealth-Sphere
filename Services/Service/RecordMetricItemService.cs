@@ -90,30 +90,158 @@ namespace FHealthSphere.Services.Services
             }
         }
 
-        public async Task<BasePaginatedList<RecordMetricItem>> GetAllRecordMetricItems(int pageNumber, int pageSize)
+        public async Task<BasePaginatedList<RecordMetricItem>> GetAllRecordMetricItems(int pageNumber, int pageSize, int? recordId = null, int? healthRecordId = null, int? metricId = null, string value = null, string type = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
         {
-            if (pageNumber < 1) pageNumber = 1;
-            if (pageSize < 1) pageSize = 10; // Default page size
+            try
+            {
+                _logger.LogInformation("Fetching all RecordMetricItems with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, RecordId: {RecordId}, HealthRecordId: {HealthRecordId}, MetricId: {MetricId}, Value: {Value}, Type: {Type}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}, IsActive: {IsActive}", pageNumber, pageSize, recordId, healthRecordId, metricId, value, type, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
 
-            var recordMetricItemsQuery = _unitOfWork.GetRepository<RecordMetricItem>()
-                .Entities
-                .Where(r => !r.DeletedTime.HasValue)
-                .OrderByDescending(r => r.CreatedTime);
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageSize < 1) pageSize = 10;
 
-            int totalCount = await recordMetricItemsQuery.CountAsync();
+                var itemsQuery = _unitOfWork.GetRepository<RecordMetricItem>()
+                    .Entities
+                    .AsQueryable();
 
-            var recordMetricItems = await recordMetricItemsQuery
-                .Include(r => r.HealthRecord)
-                .ThenInclude(hr => hr.Patient)
-                .Include(r => r.HealthRecord)
-                .ThenInclude(hr => hr.Band)
-                .ThenInclude(b => b.BandBrand)
-                .Include(r => r.Metric)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+                // Áp dụng bộ lọc
+                if (recordId.HasValue)
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.RecordId == recordId.Value);
+                }
+                if (healthRecordId.HasValue)
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.HealthRecordId == healthRecordId.Value);
+                }
+                if (metricId.HasValue)
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.MetricId == metricId.Value);
+                }
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.Value != null && ri.Value.Contains(value));
+                }
+                if (!string.IsNullOrWhiteSpace(type))
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.Type != null && ri.Type.Contains(type));
+                }
+                if (createdStartDate.HasValue)
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.CreatedTime.Date >= createdStartDate.Value.Date);
+                }
+                if (createdEndDate.HasValue)
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.CreatedTime.Date <= createdEndDate.Value.Date);
+                }
+                if (updatedStartDate.HasValue)
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.LastUpdatedTime.Date >= updatedStartDate.Value.Date);
+                }
+                if (updatedEndDate.HasValue)
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.LastUpdatedTime.Date <= updatedEndDate.Value.Date);
+                }
+                if (deletedStartDate.HasValue)
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.DeletedTime.HasValue && ri.DeletedTime.Value.Date >= deletedStartDate.Value.Date);
+                }
+                if (deletedEndDate.HasValue)
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.DeletedTime.HasValue && ri.DeletedTime.Value.Date <= deletedEndDate.Value.Date);
+                }
+                if (!string.IsNullOrWhiteSpace(createdBy))
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.CreatedBy != null && ri.CreatedBy.Contains(createdBy));
+                }
+                if (!string.IsNullOrWhiteSpace(updatedBy))
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.LastUpdatedBy != null && ri.LastUpdatedBy.Contains(updatedBy));
+                }
+                if (!string.IsNullOrWhiteSpace(deletedBy))
+                {
+                    itemsQuery = itemsQuery.Where(ri => ri.DeletedBy != null && ri.DeletedBy.Contains(deletedBy));
+                }
+                if (isActive.HasValue)
+                {
+                    itemsQuery = itemsQuery.Where(ri => (ri.DeletedTime.HasValue == !isActive.Value));
+                }
 
-            return new BasePaginatedList<RecordMetricItem>(recordMetricItems, totalCount, pageNumber, pageSize);
+                // Loại bỏ các bản ghi bị soft delete nếu không có bộ lọc DeletedTime hoặc isActive
+                if (!deletedStartDate.HasValue && !deletedEndDate.HasValue && !isActive.HasValue)
+                {
+                    itemsQuery = itemsQuery.Where(ri => !ri.DeletedTime.HasValue);
+                }
+
+                // Áp dụng sắp xếp
+                if (!string.IsNullOrWhiteSpace(sortBy))
+                {
+                    switch (sortBy.ToLower())
+                    {
+                        case "recordid":
+                            itemsQuery = sortOrder.ToLower() == "desc"
+                                ? itemsQuery.OrderByDescending(ri => ri.RecordId)
+                                : itemsQuery.OrderBy(ri => ri.RecordId);
+                            break;
+                        case "healthrecordid":
+                            itemsQuery = sortOrder.ToLower() == "desc"
+                                ? itemsQuery.OrderByDescending(ri => ri.HealthRecordId)
+                                : itemsQuery.OrderBy(ri => ri.HealthRecordId);
+                            break;
+                        case "metricid":
+                            itemsQuery = sortOrder.ToLower() == "desc"
+                                ? itemsQuery.OrderByDescending(ri => ri.MetricId)
+                                : itemsQuery.OrderBy(ri => ri.MetricId);
+                            break;
+                        case "value":
+                            itemsQuery = sortOrder.ToLower() == "desc"
+                                ? itemsQuery.OrderByDescending(ri => ri.Value)
+                                : itemsQuery.OrderBy(ri => ri.Value);
+                            break;
+                        case "type":
+                            itemsQuery = sortOrder.ToLower() == "desc"
+                                ? itemsQuery.OrderByDescending(ri => ri.Type)
+                                : itemsQuery.OrderBy(ri => ri.Type);
+                            break;
+                        case "createdtime":
+                            itemsQuery = sortOrder.ToLower() == "desc"
+                                ? itemsQuery.OrderByDescending(ri => ri.CreatedTime)
+                                : itemsQuery.OrderBy(ri => ri.CreatedTime);
+                            break;
+                        case "lastupdatedtime":
+                            itemsQuery = sortOrder.ToLower() == "desc"
+                                ? itemsQuery.OrderByDescending(ri => ri.LastUpdatedTime)
+                                : itemsQuery.OrderBy(ri => ri.LastUpdatedTime);
+                            break;
+                        case "deletedtime":
+                            itemsQuery = sortOrder.ToLower() == "desc"
+                                ? itemsQuery.OrderByDescending(ri => ri.DeletedTime ?? DateTimeOffset.MinValue)
+                                : itemsQuery.OrderBy(ri => ri.DeletedTime ?? DateTimeOffset.MinValue);
+                            break;
+                        default:
+                            itemsQuery = itemsQuery.OrderByDescending(ri => ri.CreatedTime); // Mặc định
+                            break;
+                    }
+                }
+                else
+                {
+                    itemsQuery = itemsQuery.OrderByDescending(ri => ri.CreatedTime); // Mặc định
+                }
+
+                int totalCount = await itemsQuery.CountAsync();
+
+                var items = await itemsQuery
+                    .Include(ri => ri.HealthRecord)
+                    .Include(ri => ri.Metric)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return new BasePaginatedList<RecordMetricItem>(items, totalCount, pageNumber, pageSize);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch RecordMetricItems: {Message}", ex.Message);
+                throw;
+            }
         }
 
         public async Task<RecordMetricItem> GetRecordMetricItemById(int id)

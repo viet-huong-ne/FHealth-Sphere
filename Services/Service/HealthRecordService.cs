@@ -66,27 +66,140 @@ namespace FHealthSphere.Services.Services
             return healthRecord;
         }
 
-        public async Task<BasePaginatedList<HealthRecord>> GetAllHealthRecords(int pageNumber, int pageSize)
+        public async Task<BasePaginatedList<HealthRecord>> GetAllHealthRecords(int pageNumber, int pageSize, int? patientId = null, int? bandId = null, string ghiChu = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
         {
-            if (pageNumber < 1) pageNumber = 1;
-            if (pageSize < 1) pageSize = 10; // Default page size
+            try
+            {
+                _logger.LogInformation("Fetching all HealthRecords with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, PatientId: {PatientId}, BandId: {BandId}, GhiChu: {GhiChu}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}, IsActive: {IsActive}", pageNumber, pageSize, patientId, bandId, ghiChu, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
 
-            var healthRecordsQuery = _unitOfWork.GetRepository<HealthRecord>()
-                .Entities
-                .Where(hr => !hr.DeletedTime.HasValue)
-                .OrderByDescending(hr => hr.CreatedTime);
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageSize < 1) pageSize = 10;
 
-            int totalCount = await healthRecordsQuery.CountAsync();
+                var recordsQuery = _unitOfWork.GetRepository<HealthRecord>()
+                    .Entities
+                    .AsQueryable();
 
-            var healthRecords = await healthRecordsQuery
-                .Include(hr => hr.Patient)
-                .Include(hr => hr.Band)
-                .ThenInclude(b => b.BandBrand) // Load BandBrand nếu cần
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+                // Áp dụng bộ lọc
+                if (patientId.HasValue)
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.PatientId == patientId.Value);
+                }
+                if (bandId.HasValue)
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.BandId == bandId.Value);
+                }
+                if (!string.IsNullOrWhiteSpace(ghiChu))
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.GhiChu != null && hr.GhiChu.Contains(ghiChu));
+                }
+                if (createdStartDate.HasValue)
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.CreatedTime.Date >= createdStartDate.Value.Date);
+                }
+                if (createdEndDate.HasValue)
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.CreatedTime.Date <= createdEndDate.Value.Date);
+                }
+                if (updatedStartDate.HasValue)
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.LastUpdatedTime.Date >= updatedStartDate.Value.Date);
+                }
+                if (updatedEndDate.HasValue)
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.LastUpdatedTime.Date <= updatedEndDate.Value.Date);
+                }
+                if (deletedStartDate.HasValue)
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.DeletedTime.HasValue && hr.DeletedTime.Value.Date >= deletedStartDate.Value.Date);
+                }
+                if (deletedEndDate.HasValue)
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.DeletedTime.HasValue && hr.DeletedTime.Value.Date <= deletedEndDate.Value.Date);
+                }
+                if (!string.IsNullOrWhiteSpace(createdBy))
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.CreatedBy != null && hr.CreatedBy.Contains(createdBy));
+                }
+                if (!string.IsNullOrWhiteSpace(updatedBy))
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.LastUpdatedBy != null && hr.LastUpdatedBy.Contains(updatedBy));
+                }
+                if (!string.IsNullOrWhiteSpace(deletedBy))
+                {
+                    recordsQuery = recordsQuery.Where(hr => hr.DeletedBy != null && hr.DeletedBy.Contains(deletedBy));
+                }
+                if (isActive.HasValue)
+                {
+                    recordsQuery = recordsQuery.Where(hr => (hr.DeletedTime.HasValue == !isActive.Value));
+                }
 
-            return new BasePaginatedList<HealthRecord>(healthRecords, totalCount, pageNumber, pageSize);
+                // Loại bỏ các bản ghi bị soft delete nếu không có bộ lọc DeletedTime hoặc isActive
+                if (!deletedStartDate.HasValue && !deletedEndDate.HasValue && !isActive.HasValue)
+                {
+                    recordsQuery = recordsQuery.Where(hr => !hr.DeletedTime.HasValue);
+                }
+
+                // Áp dụng sắp xếp
+                if (!string.IsNullOrWhiteSpace(sortBy))
+                {
+                    switch (sortBy.ToLower())
+                    {
+                        case "patientid":
+                            recordsQuery = sortOrder.ToLower() == "desc"
+                                ? recordsQuery.OrderByDescending(hr => hr.PatientId)
+                                : recordsQuery.OrderBy(hr => hr.PatientId);
+                            break;
+                        case "bandid":
+                            recordsQuery = sortOrder.ToLower() == "desc"
+                                ? recordsQuery.OrderByDescending(hr => hr.BandId)
+                                : recordsQuery.OrderBy(hr => hr.BandId);
+                            break;
+                        case "createdtime":
+                            recordsQuery = sortOrder.ToLower() == "desc"
+                                ? recordsQuery.OrderByDescending(hr => hr.CreatedTime)
+                                : recordsQuery.OrderBy(hr => hr.CreatedTime);
+                            break;
+                        case "lastupdatedtime":
+                            recordsQuery = sortOrder.ToLower() == "desc"
+                                ? recordsQuery.OrderByDescending(hr => hr.LastUpdatedTime)
+                                : recordsQuery.OrderBy(hr => hr.LastUpdatedTime);
+                            break;
+                        case "deletedtime":
+                            recordsQuery = sortOrder.ToLower() == "desc"
+                                ? recordsQuery.OrderByDescending(hr => hr.DeletedTime ?? DateTimeOffset.MinValue)
+                                : recordsQuery.OrderBy(hr => hr.DeletedTime ?? DateTimeOffset.MinValue);
+                            break;
+                        case "ghichu":
+                            recordsQuery = sortOrder.ToLower() == "desc"
+                                ? recordsQuery.OrderByDescending(hr => hr.GhiChu)
+                                : recordsQuery.OrderBy(hr => hr.GhiChu);
+                            break;
+                        default:
+                            recordsQuery = recordsQuery.OrderByDescending(hr => hr.CreatedTime); // Mặc định
+                            break;
+                    }
+                }
+                else
+                {
+                    recordsQuery = recordsQuery.OrderByDescending(hr => hr.CreatedTime); // Mặc định
+                }
+
+                int totalCount = await recordsQuery.CountAsync();
+
+                var records = await recordsQuery
+                    .Include(hr => hr.Patient)
+                    .Include(hr => hr.Band)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return new BasePaginatedList<HealthRecord>(records, totalCount, pageNumber, pageSize);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch HealthRecords: {Message}", ex.Message);
+                throw;
+            }
         }
         public async Task<HealthRecord> GetHealthRecordById(int id)
         {
