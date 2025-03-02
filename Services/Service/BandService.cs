@@ -60,18 +60,119 @@ namespace Services.Service
             return band;
         }
 
-        public async Task<BasePaginatedList<Band>> GetAllBands(int pageNumber, int pageSize)
+        public async Task<BasePaginatedList<Band>> GetAllBands(int pageNumber, int pageSize, int? patientId = null, int? bandBrandId = null, string image = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null)
         {
             try
             {
-                _logger.LogInformation("Fetching all Bands with pageNumber: {PageNumber}, pageSize: {PageSize}", pageNumber, pageSize);
+                _logger.LogInformation("Fetching all Bands with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, PatientId: {PatientId}, BandBrandId: {BandBrandId}, Image: {Image}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}", pageNumber, pageSize, patientId, bandBrandId, image, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy);
+
                 if (pageNumber < 1) pageNumber = 1;
                 if (pageSize < 1) pageSize = 10;
 
                 var bandsQuery = _unitOfWork.GetRepository<Band>()
                     .Entities
-                    .Where(b => !b.DeletedTime.HasValue)
-                    .OrderByDescending(b => b.CreatedTime);
+                    .AsQueryable();
+
+                // Áp dụng bộ lọc
+                if (patientId.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.PatientId == patientId.Value);
+                }
+                if (bandBrandId.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.BandBrandId == bandBrandId.Value);
+                }
+                if (!string.IsNullOrWhiteSpace(image))
+                {
+                    bandsQuery = bandsQuery.Where(b => b.Image.Contains(image));
+                }
+                if (createdStartDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.CreatedTime.Date >= createdStartDate.Value.Date);
+                }
+                if (createdEndDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.CreatedTime.Date <= createdEndDate.Value.Date);
+                }
+                if (updatedStartDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.LastUpdatedTime.Date >= updatedStartDate.Value.Date); // Không cần HasValue vì LastUpdatedTime không null
+                }
+                if (updatedEndDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.LastUpdatedTime.Date <= updatedEndDate.Value.Date); // Không cần HasValue
+                }
+                if (deletedStartDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.DeletedTime.HasValue && b.DeletedTime.Value.Date >= deletedStartDate.Value.Date);
+                }
+                if (deletedEndDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => b.DeletedTime.HasValue && b.DeletedTime.Value.Date <= deletedEndDate.Value.Date);
+                }
+                if (!string.IsNullOrWhiteSpace(createdBy))
+                {
+                    bandsQuery = bandsQuery.Where(b => b.CreatedBy != null && b.CreatedBy.Contains(createdBy));
+                }
+                if (!string.IsNullOrWhiteSpace(updatedBy))
+                {
+                    bandsQuery = bandsQuery.Where(b => b.LastUpdatedBy != null && b.LastUpdatedBy.Contains(updatedBy));
+                }
+                if (!string.IsNullOrWhiteSpace(deletedBy))
+                {
+                    bandsQuery = bandsQuery.Where(b => b.DeletedBy != null && b.DeletedBy.Contains(deletedBy));
+                }
+
+                // Loại bỏ các bản ghi bị soft delete nếu không có bộ lọc DeletedTime
+                if (!deletedStartDate.HasValue && !deletedEndDate.HasValue)
+                {
+                    bandsQuery = bandsQuery.Where(b => !b.DeletedTime.HasValue);
+                }
+
+                // Áp dụng sắp xếp
+                if (!string.IsNullOrWhiteSpace(sortBy))
+                {
+                    switch (sortBy.ToLower())
+                    {
+                        case "patientid":
+                            bandsQuery = sortOrder.ToLower() == "desc"
+                                ? bandsQuery.OrderByDescending(b => b.PatientId)
+                                : bandsQuery.OrderBy(b => b.PatientId);
+                            break;
+                        case "bandbrandid":
+                            bandsQuery = sortOrder.ToLower() == "desc"
+                                ? bandsQuery.OrderByDescending(b => b.BandBrandId)
+                                : bandsQuery.OrderBy(b => b.BandBrandId);
+                            break;
+                        case "createdtime":
+                            bandsQuery = sortOrder.ToLower() == "desc"
+                                ? bandsQuery.OrderByDescending(b => b.CreatedTime)
+                                : bandsQuery.OrderBy(b => b.CreatedTime);
+                            break;
+                        case "lastupdatedtime":
+                            bandsQuery = sortOrder.ToLower() == "desc"
+                                ? bandsQuery.OrderByDescending(b => b.LastUpdatedTime)
+                                : bandsQuery.OrderBy(b => b.LastUpdatedTime);
+                            break;
+                        case "deletedtime":
+                            bandsQuery = sortOrder.ToLower() == "desc"
+                                ? bandsQuery.OrderByDescending(b => b.DeletedTime ?? DateTimeOffset.MinValue)
+                                : bandsQuery.OrderBy(b => b.DeletedTime ?? DateTimeOffset.MinValue);
+                            break;
+                        case "image":
+                            bandsQuery = sortOrder.ToLower() == "desc"
+                                ? bandsQuery.OrderByDescending(b => b.Image)
+                                : bandsQuery.OrderBy(b => b.Image);
+                            break;
+                        default:
+                            bandsQuery = bandsQuery.OrderByDescending(b => b.CreatedTime); // Mặc định
+                            break;
+                    }
+                }
+                else
+                {
+                    bandsQuery = bandsQuery.OrderByDescending(b => b.CreatedTime); // Mặc định
+                }
 
                 int totalCount = await bandsQuery.CountAsync();
 

@@ -250,7 +250,5 @@ namespace FHealthSphere.Services.Services
         {
             throw new NotImplementedException();
         }
-
-
     }
 }

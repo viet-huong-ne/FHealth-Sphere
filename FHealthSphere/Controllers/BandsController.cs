@@ -23,11 +23,27 @@ namespace FHealthSphere.Controllers
 
         // GET: api/Bands?pageNumber=1&pageSize=10
         [HttpGet]
-        public async Task<ActionResult<BasePaginatedList<Band>>> GetAllBands([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<ActionResult<BasePaginatedList<Band>>> GetAllBands(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] int? patientId = null,
+            [FromQuery] int? bandBrandId = null,
+            [FromQuery] string image = null,
+            [FromQuery] string sortBy = null,
+            [FromQuery] string sortOrder = "asc",
+            [FromQuery] DateTime? createdStartDate = null,
+            [FromQuery] DateTime? createdEndDate = null,
+            [FromQuery] DateTime? updatedStartDate = null,
+            [FromQuery] DateTime? updatedEndDate = null,
+            [FromQuery] DateTime? deletedStartDate = null,
+            [FromQuery] DateTime? deletedEndDate = null,
+            [FromQuery] string createdBy = null,
+            [FromQuery] string updatedBy = null,
+            [FromQuery] string deletedBy = null)
         {
             try
             {
-                var bands = await _bandService.GetAllBands(pageNumber, pageSize);
+                var bands = await _bandService.GetAllBands(pageNumber, pageSize, patientId, bandBrandId, image, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy);
                 return Ok(BaseResponse<BasePaginatedList<Band>>.OkResponse(bands));
             }
             catch (Exception ex)
