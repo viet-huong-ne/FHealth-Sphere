@@ -6,7 +6,9 @@ using FHealthSphere;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Contract.Services.Interface;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -16,17 +18,29 @@ using Repositories.UOW;
 using System;
 using System.Text;
 
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Cấu hình database
+builder.Services.Configure<JsonOptions>(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    options.JsonSerializerOptions.MaxDepth = 64; 
+});
+
 builder.Services.AddDbContext<FHealthSphereDBContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection"), b =>
         b.MigrationsAssembly("Repositories"));
 });
 
-// Đăng ký Unit of Work
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
+builder.Services.AddLogging();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //Thêm Identity(Chỉ cần gọi 1 lần)
@@ -156,6 +170,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAllOrigins",
         builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
+
 var app = builder.Build();
 
 // Middleware pipeline
@@ -164,6 +179,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
+
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API v1");
         c.RoutePrefix = "swagger";
     });

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ModelViews.BandBrandModelViews
 {
-    public class CreateBandBrandModel
+    public class UpdateBandBrandModel
     {
         [Required(ErrorMessage = "Name is required.")]
         [StringLength(255, ErrorMessage = "Name cannot exceed 255 characters.")]

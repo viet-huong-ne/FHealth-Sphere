@@ -17,7 +17,6 @@ namespace Contract.Repositories.Entity
         public int? MetricId { get; set; }
         public string? Value { get; set; }
         public string? Type { get; set; }
-
         public virtual HealthRecord? HealthRecord { get; set; }
         public virtual Metric? Metric { get; set; }
     }

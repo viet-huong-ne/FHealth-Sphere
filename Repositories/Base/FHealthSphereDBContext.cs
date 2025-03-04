@@ -30,6 +30,7 @@ namespace Repositories.Base
         public DbSet<Metric> Metrics { get; set; }
         public DbSet<HealthRecord> HealthRecords { get; set; }
         public DbSet<RecordMetricItem> RecordMetricItems { get; set; }
+        public DbSet<MetricGroup> MetricGroup { get; set; }
         public DbSet<NotificationSystem> NotificationSystems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

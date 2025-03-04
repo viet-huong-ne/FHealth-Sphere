@@ -2,30 +2,31 @@
 using Contract.Services.Interface;
 using Core.Base;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ModelViews.BandBrandModelViews;
-using Services.Service;
-using System.Runtime.InteropServices;
+using ModelViews.MetricModelViews;
 using System.Threading.Tasks;
 
 namespace FHealthSphere.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
-    public class BandBrandsController : ControllerBase
+
+    public class MetricsController : ControllerBase
     {
-        private readonly IBandBrandService _brandService;
-        public BandBrandsController(IBandBrandService brandService)
+        private readonly IMetricService _metricService;
+
+        public MetricsController(IMetricService metricService)
         {
-            _brandService = brandService;
+            _metricService = metricService;
         }
+
         [HttpGet]
-        public async Task<ActionResult<BasePaginatedList<BandBrand>>> GetAllBandBrands(
+        public async Task<ActionResult<BasePaginatedList<Metric>>> GetAllMetrics(
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10,
     [FromQuery] string name = null,
+    [FromQuery] string unit = null,
+    [FromQuery] int? metricGroupId = null,
     [FromQuery] string sortBy = null,
     [FromQuery] string sortOrder = "asc",
     [FromQuery] DateTime? createdStartDate = null,
@@ -81,22 +82,21 @@ namespace FHealthSphere.Controllers
                     return BadRequest("deletedStartDate must be less than or equal to deletedEndDate.");
                 }
 
-                var bandBrands = await _brandService.GetAllBandBrands(pageNumber, pageSize, name, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
-                return Ok(BaseResponse<BasePaginatedList<BandBrand>>.OkResponse(bandBrands));
+                var metrics = await _metricService.GetAllMetrics(pageNumber, pageSize, name, unit, metricGroupId, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
+                return Ok(BaseResponse<BasePaginatedList<Metric>>.OkResponse(metrics));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while retrieving BandBrands: {ex.Message}");
+                return StatusCode(500, $"An error occurred while retrieving Metrics: {ex.Message}");
             }
         }
-
         [HttpGet("{id}")] // Thêm phương thức Get by Id
-        public async Task<ActionResult<BandBrand>> GetBandBrandById(int id)
+        public async Task<ActionResult<Metric>> GetMetricById(int id)
         {
             try
             {
-                var bandBrand = await _brandService.GetBandBrandById(id);
-                return Ok(BaseResponse<BandBrand>.OkResponse(bandBrand));
+                var metric = await _metricService.GetMetricById(id);
+                return Ok(BaseResponse<Metric>.OkResponse(metric));
             }
             catch (KeyNotFoundException ex)
             {
@@ -104,25 +104,13 @@ namespace FHealthSphere.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Failed to get BandBrand with ID {id}: {ex.Message}");
+                return StatusCode(500, $"Failed to get Metric with ID {id}: {ex.Message}");
             }
         }
+
+        // POST: api/Metrics
         [HttpPost]
-        public async Task<IActionResult> AddBandBrand([FromBody] CreateBandBrandModel model)
-        {
-            try
-            {
-                var brand = await _brandService.CreateBandBrand(model);
-                return Ok(BaseResponse<BandBrand>.OkResponse(brand)); // return band brand created
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-        // PUT: api/BandBrands/{id}
-        [HttpPut("{id}")]
-        public async Task<ActionResult<BandBrand>> UpdateBandBrand(int id, [FromBody] UpdateBandBrandModel model)
+        public async Task<ActionResult<Metric>> CreateMetric([FromBody] CreateMetricModel model)
         {
             try
             {
@@ -131,8 +119,8 @@ namespace FHealthSphere.Controllers
                     return BadRequest("Request body is required.");
                 }
 
-                var brand = await _brandService.UpdateBandBrand(id, model);
-                return Ok(BaseResponse<BandBrand>.OkResponse(brand));
+                var metric = await _metricService.CreateMetric(model);
+                return Ok(BaseResponse<Metric>.OkResponse(metric));
             }
             catch (ArgumentNullException ex)
             {
@@ -142,9 +130,37 @@ namespace FHealthSphere.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (InvalidOperationException ex)
+            catch (KeyNotFoundException ex)
             {
-                return Conflict(ex.Message);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to create Metric: {ex.Message}");
+            }
+        }
+
+        // PUT: api/Metrics/{id}
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Metric>> UpdateMetric(int id, [FromBody] UpdateMetricModel model)
+        {
+            try
+            {
+                if (model == null)
+                {
+                    return BadRequest("Request body is required.");
+                }
+
+                var metric = await _metricService.UpdateMetric(id, model);
+                return Ok(BaseResponse<Metric>.OkResponse(metric));
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
@@ -152,26 +168,26 @@ namespace FHealthSphere.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Failed to update BandBrand with ID {id}: {ex.Message}");
+                return StatusCode(500, $"Failed to update Metric with ID {id}: {ex.Message}");
             }
         }
 
-        // DELETE: api/BandBrands/{id}
+        // DELETE: api/Metrics/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBandBrand(int id)
+        public async Task<IActionResult> DeleteMetric(int id)
         {
             try
             {
-                var result = await _brandService.DeleteBandBrand(id);
+                var result = await _metricService.DeleteMetric(id);
                 if (!result)
                 {
-                    return NotFound($"BandBrand with ID {id} not found or already deleted.");
+                    return NotFound($"Metric with ID {id} not found or already deleted.");
                 }
-                return Ok($"BandBrand with ID {id} successfully soft deleted.");
+                return Ok($"Metric with ID {id} successfully soft deleted.");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Failed to delete BandBrand with ID {id}: {ex.Message}");
+                return StatusCode(500, $"Failed to delete Metric with ID {id}: {ex.Message}");
             }
         }
 

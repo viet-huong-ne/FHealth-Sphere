@@ -2,30 +2,33 @@
 using Contract.Services.Interface;
 using Core.Base;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ModelViews.BandBrandModelViews;
-using Services.Service;
-using System.Runtime.InteropServices;
+using ModelViews.RecordMetricItemModelViews;
 using System.Threading.Tasks;
 
 namespace FHealthSphere.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
-    public class BandBrandsController : ControllerBase
+
+    public class RecordMetricItemsController : ControllerBase
     {
-        private readonly IBandBrandService _brandService;
-        public BandBrandsController(IBandBrandService brandService)
+        private readonly IRecordMetricItemService _recordMetricItemService;
+
+        public RecordMetricItemsController(IRecordMetricItemService recordMetricItemService)
         {
-            _brandService = brandService;
+            _recordMetricItemService = recordMetricItemService;
         }
+
         [HttpGet]
-        public async Task<ActionResult<BasePaginatedList<BandBrand>>> GetAllBandBrands(
+        public async Task<ActionResult<BasePaginatedList<RecordMetricItem>>> GetAllRecordMetricItems(
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10,
-    [FromQuery] string name = null,
+    [FromQuery] int? recordId = null,
+    [FromQuery] int? healthRecordId = null,
+    [FromQuery] int? metricId = null,
+    [FromQuery] string value = null,
+    [FromQuery] string type = null,
     [FromQuery] string sortBy = null,
     [FromQuery] string sortOrder = "asc",
     [FromQuery] DateTime? createdStartDate = null,
@@ -81,22 +84,21 @@ namespace FHealthSphere.Controllers
                     return BadRequest("deletedStartDate must be less than or equal to deletedEndDate.");
                 }
 
-                var bandBrands = await _brandService.GetAllBandBrands(pageNumber, pageSize, name, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
-                return Ok(BaseResponse<BasePaginatedList<BandBrand>>.OkResponse(bandBrands));
+                var recordMetricItems = await _recordMetricItemService.GetAllRecordMetricItems(pageNumber, pageSize, recordId, healthRecordId, metricId, value, type, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
+                return Ok(BaseResponse<BasePaginatedList<RecordMetricItem>>.OkResponse(recordMetricItems));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while retrieving BandBrands: {ex.Message}");
+                return StatusCode(500, $"An error occurred while retrieving RecordMetricItems: {ex.Message}");
             }
         }
-
         [HttpGet("{id}")] // Thêm phương thức Get by Id
-        public async Task<ActionResult<BandBrand>> GetBandBrandById(int id)
+        public async Task<ActionResult<RecordMetricItem>> GetRecordMetricItemById(int id)
         {
             try
             {
-                var bandBrand = await _brandService.GetBandBrandById(id);
-                return Ok(BaseResponse<BandBrand>.OkResponse(bandBrand));
+                var recordMetricItem = await _recordMetricItemService.GetRecordMetricItemById(id);
+                return Ok(BaseResponse<RecordMetricItem>.OkResponse(recordMetricItem));
             }
             catch (KeyNotFoundException ex)
             {
@@ -104,25 +106,12 @@ namespace FHealthSphere.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Failed to get BandBrand with ID {id}: {ex.Message}");
+                return StatusCode(500, $"Failed to get RecordMetricItem with ID {id}: {ex.Message}");
             }
         }
+
         [HttpPost]
-        public async Task<IActionResult> AddBandBrand([FromBody] CreateBandBrandModel model)
-        {
-            try
-            {
-                var brand = await _brandService.CreateBandBrand(model);
-                return Ok(BaseResponse<BandBrand>.OkResponse(brand)); // return band brand created
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-        // PUT: api/BandBrands/{id}
-        [HttpPut("{id}")]
-        public async Task<ActionResult<BandBrand>> UpdateBandBrand(int id, [FromBody] UpdateBandBrandModel model)
+        public async Task<ActionResult<RecordMetricItem>> CreateRecordMetricItem([FromBody] CreateRecordMetricItemModel model)
         {
             try
             {
@@ -131,8 +120,8 @@ namespace FHealthSphere.Controllers
                     return BadRequest("Request body is required.");
                 }
 
-                var brand = await _brandService.UpdateBandBrand(id, model);
-                return Ok(BaseResponse<BandBrand>.OkResponse(brand));
+                var recordMetricItem = await _recordMetricItemService.CreateRecordMetricItem(model);
+                return Ok(BaseResponse<RecordMetricItem>.OkResponse(recordMetricItem));
             }
             catch (ArgumentNullException ex)
             {
@@ -142,38 +131,73 @@ namespace FHealthSphere.Controllers
             {
                 return BadRequest(ex.Message);
             }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
             catch (InvalidOperationException ex)
             {
                 return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to create RecordMetricItem: {ex.InnerException?.Message ?? ex.Message}");
+            }
+        }
+
+        // PUT: api/RecordMetricItems/{id}
+        [HttpPut("{id}")]
+        public async Task<ActionResult<RecordMetricItem>> UpdateRecordMetricItem(int id, [FromBody] UpdateRecordMetricItemModel model)
+        {
+            try
+            {
+                if (model == null)
+                {
+                    return BadRequest("Request body is required.");
+                }
+
+                var recordMetricItem = await _recordMetricItemService.UpdateRecordMetricItem(id, model);
+                return Ok(BaseResponse<RecordMetricItem>.OkResponse(recordMetricItem));
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
                 return NotFound(ex.Message);
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Failed to update BandBrand with ID {id}: {ex.Message}");
+                return StatusCode(500, $"Failed to update RecordMetricItem with ID {id}: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
-        // DELETE: api/BandBrands/{id}
+        // DELETE: api/RecordMetricItems/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBandBrand(int id)
+        public async Task<IActionResult> DeleteRecordMetricItem(int id)
         {
             try
             {
-                var result = await _brandService.DeleteBandBrand(id);
+                var result = await _recordMetricItemService.DeleteRecordMetricItem(id);
                 if (!result)
                 {
-                    return NotFound($"BandBrand with ID {id} not found or already deleted.");
+                    return NotFound($"RecordMetricItem with ID {id} not found or already deleted.");
                 }
-                return Ok($"BandBrand with ID {id} successfully soft deleted.");
+                return Ok($"RecordMetricItem with ID {id} successfully soft deleted.");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Failed to delete BandBrand with ID {id}: {ex.Message}");
+                return StatusCode(500, $"Failed to delete RecordMetricItem with ID {id}: {ex.Message}");
             }
         }
-
     }
 }

@@ -6,6 +6,7 @@ using Contract.Services.Interface;
 using Services;
 using Services.Service;
 using Repositories.Base;
+using FHealthSphere.Services.Services;
 
 namespace FHealthSphere
 {
@@ -46,8 +47,14 @@ namespace FHealthSphere
         {
             services
                 .AddScoped<IUserService, UserService>()
-                .AddScoped<IBandBrandService, BandBrandService>()
                 .AddScoped<TokenService>();
+         .AddScoped<IBandBrandService, BandBrandService>()
+         .AddScoped<IHealthRecordService, HealthRecordService>()
+         .AddScoped<IMetricGroupService, MetricGroupService>()
+         .AddScoped<IMetricService, MetricService>()
+         .AddScoped<IRecordMetricItemService, RecordMetricItemService>()
+         .AddScoped<IBandService, BandService>();
+
         }
     }
 }
