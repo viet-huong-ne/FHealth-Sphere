@@ -44,12 +44,12 @@ namespace Services.Service
             {
                 throw new KeyNotFoundException($"BandBrand with ID {model.BandBrandId} not found.");
             }
-
+            var bandbrand = await _unitOfWork.GetRepository<BandBrand>().GetByIdAsync(model.BandBrandId);
             var band = new Band
             {
                 PatientId = model.PatientId,
                 Image = model.Image.Trim(),
-                BandBrandId = model.BandBrandId,
+                BandBrand = bandbrand,
                 CreatedBy = "System",
                 CreatedTime = DateTimeOffset.Now,
                 LastUpdatedTime = DateTimeOffset.Now
@@ -80,7 +80,7 @@ namespace Services.Service
                 }
                 if (bandBrandId.HasValue)
                 {
-                    bandsQuery = bandsQuery.Where(b => b.BandBrandId == bandBrandId.Value);
+                    bandsQuery = bandsQuery.Where(b => b.BandBrand.Id == bandBrandId.Value);
                 }
                 if (!string.IsNullOrWhiteSpace(image))
                 {
@@ -145,8 +145,8 @@ namespace Services.Service
                             break;
                         case "bandbrandid":
                             bandsQuery = sortOrder.ToLower() == "desc"
-                                ? bandsQuery.OrderByDescending(b => b.BandBrandId)
-                                : bandsQuery.OrderBy(b => b.BandBrandId);
+                                ? bandsQuery.OrderByDescending(b => b.BandBrand.Id)
+                                : bandsQuery.OrderBy(b => b.BandBrand.Id);
                             break;
                         case "createdtime":
                             bandsQuery = sortOrder.ToLower() == "desc"
@@ -252,7 +252,7 @@ namespace Services.Service
                 {
                     throw new KeyNotFoundException($"BandBrand with ID {model.BandBrandId.Value} not found.");
                 }
-                band.BandBrandId = model.BandBrandId.Value;
+                band.BandBrand.Id = model.BandBrandId.Value;
             }
 
             if (!string.IsNullOrWhiteSpace(model.Image))

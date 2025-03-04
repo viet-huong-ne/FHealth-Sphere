@@ -9,7 +9,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace FHealthSphere.Services.Services
+namespace Services.Service
 {
     public class AccountService : IAccountService
     {

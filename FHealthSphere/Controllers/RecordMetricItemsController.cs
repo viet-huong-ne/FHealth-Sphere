@@ -27,7 +27,7 @@ namespace FHealthSphere.Controllers
     [FromQuery] int? recordId = null,
     [FromQuery] int? healthRecordId = null,
     [FromQuery] int? metricId = null,
-    [FromQuery] string value = null,
+    [FromQuery] decimal? value = null,
     [FromQuery] string type = null,
     [FromQuery] string sortBy = null,
     [FromQuery] string sortOrder = "asc",

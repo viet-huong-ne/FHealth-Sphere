@@ -8,7 +8,7 @@ using Contract.Repositories.Interface;
 using Contract.Services.Interface;
 using Microsoft.Extensions.Logging;
 
-namespace FHealthSphere.Services.Services
+namespace Services.Service
 {
     public class MetricService : IMetricService
     {
@@ -49,7 +49,7 @@ namespace FHealthSphere.Services.Services
                     throw new KeyNotFoundException($"MetricGroup with ID {model.MetricGroupId.Value} not found.");
                 }
             }
-
+            var metricGroup = await _unitOfWork.GetRepository<MetricGroup>().GetByIdAsync(model.MetricGroupId.Value);
             var metric = new Metric
             {
                 Name = model.Name.Trim(),
@@ -57,7 +57,7 @@ namespace FHealthSphere.Services.Services
                 MinValue = model.MinValue,
                 MaxValue = model.MaxValue,
                 DefaultValue = model.DefaultValue,
-                MetricGroupId = model.MetricGroupId,
+                MetricGroup = metricGroup,
                 CreatedBy = "System", // Nên lấy từ context người dùng hiện tại nếu có
                 CreatedTime = DateTimeOffset.Now,
                 LastUpdatedTime = DateTimeOffset.Now
@@ -92,7 +92,7 @@ namespace FHealthSphere.Services.Services
                 }
                 if (metricGroupId.HasValue)
                 {
-                    metricsQuery = metricsQuery.Where(m => m.MetricGroupId == metricGroupId.Value);
+                    metricsQuery = metricsQuery.Where(m => m.MetricGroup.Id == metricGroupId.Value);
                 }
                 if (createdStartDate.HasValue)
                 {
@@ -173,8 +173,8 @@ namespace FHealthSphere.Services.Services
                             break;
                         case "metricgroupid":
                             metricsQuery = sortOrder.ToLower() == "desc"
-                                ? metricsQuery.OrderByDescending(m => m.MetricGroupId)
-                                : metricsQuery.OrderBy(m => m.MetricGroupId);
+                                ? metricsQuery.OrderByDescending(m => m.MetricGroup.Id)
+                                : metricsQuery.OrderBy(m => m.MetricGroup.Id);
                             break;
                         case "createdtime":
                             metricsQuery = sortOrder.ToLower() == "desc"
@@ -270,7 +270,7 @@ namespace FHealthSphere.Services.Services
                 {
                     throw new KeyNotFoundException($"MetricGroup with ID {model.MetricGroupId.Value} not found.");
                 }
-                metric.MetricGroupId = model.MetricGroupId.Value;
+                metric.MetricGroup.Id = model.MetricGroupId.Value;
             }
 
             if (!string.IsNullOrWhiteSpace(model.Name))

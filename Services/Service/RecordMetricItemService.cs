@@ -8,7 +8,7 @@ using Contract.Repositories.Interface;
 using Contract.Services.Interface;
 using Microsoft.Extensions.Logging;
 
-namespace FHealthSphere.Services.Services
+namespace Services.Service
 {
     public class RecordMetricItemService : IRecordMetricItemService
     {
@@ -32,7 +32,7 @@ namespace FHealthSphere.Services.Services
                     throw new ArgumentNullException(nameof(model), "RecordMetricItem data is required.");
                 }
 
-                if (string.IsNullOrWhiteSpace(model.Value))
+                if (model.Value == null)
                 {
                     throw new ArgumentException("Value is required.", nameof(model.Value));
                 }
@@ -61,18 +61,17 @@ namespace FHealthSphere.Services.Services
                 // Kiểm tra duy nhất RecordId nếu cần (tùy ý)
                 var existingRecord = await _unitOfWork.GetRepository<RecordMetricItem>()
                     .Entities
-                    .FirstOrDefaultAsync(ri => ri.RecordId == model.RecordId && !ri.DeletedTime.HasValue);
+                    .FirstOrDefaultAsync(ri => ri.HealthRecord.Id == model.RecordId && !ri.DeletedTime.HasValue);
                 if (existingRecord != null)
                 {
                     throw new InvalidOperationException($"RecordMetricItem with RecordId {model.RecordId} already exists.");
                 }
-
+                var healthRecord = await _unitOfWork.GetRepository<HealthRecord>().GetByIdAsync(model.HealthRecordId);
                 var recordMetricItem = new RecordMetricItem
                 {
-                    RecordId = model.RecordId, // Gán giá trị tùy chỉnh
-                    HealthRecordId = model.HealthRecordId,
+                    HealthRecord = healthRecord,
                     MetricId = model.MetricId,
-                    Value = model.Value.Trim(),
+                    Value = model.Value,
                     Type = model.Type.Trim(),
                     CreatedBy = "System",
                     CreatedTime = DateTimeOffset.Now,
@@ -90,7 +89,7 @@ namespace FHealthSphere.Services.Services
             }
         }
 
-        public async Task<BasePaginatedList<RecordMetricItem>> GetAllRecordMetricItems(int pageNumber, int pageSize, int? recordId = null, int? healthRecordId = null, int? metricId = null, string value = null, string type = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
+        public async Task<BasePaginatedList<RecordMetricItem>> GetAllRecordMetricItems(int pageNumber, int pageSize, int? recordId = null, int? healthRecordId = null, int? metricId = null, decimal? value = null, string type = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
         {
             try
             {
@@ -106,19 +105,19 @@ namespace FHealthSphere.Services.Services
                 // Áp dụng bộ lọc
                 if (recordId.HasValue)
                 {
-                    itemsQuery = itemsQuery.Where(ri => ri.RecordId == recordId.Value);
+                    itemsQuery = itemsQuery.Where(ri => ri.HealthRecord.Id == recordId.Value);
                 }
                 if (healthRecordId.HasValue)
                 {
-                    itemsQuery = itemsQuery.Where(ri => ri.HealthRecordId == healthRecordId.Value);
+                    itemsQuery = itemsQuery.Where(ri => ri.HealthRecord.Id == healthRecordId.Value);
                 }
                 if (metricId.HasValue)
                 {
                     itemsQuery = itemsQuery.Where(ri => ri.MetricId == metricId.Value);
                 }
-                if (!string.IsNullOrWhiteSpace(value))
+                if (value.HasValue)
                 {
-                    itemsQuery = itemsQuery.Where(ri => ri.Value != null && ri.Value.Contains(value));
+                    itemsQuery = itemsQuery.Where(ri => ri.Value != null && ri.Value == value);
                 }
                 if (!string.IsNullOrWhiteSpace(type))
                 {
@@ -176,15 +175,15 @@ namespace FHealthSphere.Services.Services
                 {
                     switch (sortBy.ToLower())
                     {
-                        case "recordid":
-                            itemsQuery = sortOrder.ToLower() == "desc"
-                                ? itemsQuery.OrderByDescending(ri => ri.RecordId)
-                                : itemsQuery.OrderBy(ri => ri.RecordId);
-                            break;
+                        //case "recordid":
+                        //    itemsQuery = sortOrder.ToLower() == "desc"
+                        //        ? itemsQuery.OrderByDescending(ri => ri.HealthRecord.Id)
+                        //        : itemsQuery.OrderBy(ri => ri.HealthRecord.Id);
+                        //    break;
                         case "healthrecordid":
                             itemsQuery = sortOrder.ToLower() == "desc"
-                                ? itemsQuery.OrderByDescending(ri => ri.HealthRecordId)
-                                : itemsQuery.OrderBy(ri => ri.HealthRecordId);
+                                ? itemsQuery.OrderByDescending(ri => ri.HealthRecord.Id)
+                                : itemsQuery.OrderBy(ri => ri.HealthRecord.Id);
                             break;
                         case "metricid":
                             itemsQuery = sortOrder.ToLower() == "desc"
@@ -300,7 +299,7 @@ namespace FHealthSphere.Services.Services
                     {
                         throw new KeyNotFoundException($"HealthRecord with ID {model.HealthRecordId.Value} not found.");
                     }
-                    recordMetricItem.HealthRecordId = model.HealthRecordId.Value;
+                    recordMetricItem.HealthRecord.Id = model.HealthRecordId.Value;
                 }
 
                 // Kiểm tra sự tồn tại của MetricId nếu được cập nhật
@@ -317,22 +316,22 @@ namespace FHealthSphere.Services.Services
                 }
 
                 // Kiểm tra duy nhất của RecordId nếu được cập nhật (tùy chọn)
-                if (model.RecordId.HasValue && model.RecordId.Value != recordMetricItem.RecordId)
+                if (model.RecordId.HasValue && model.RecordId.Value != recordMetricItem.HealthRecord.Id)
                 {
                     var existingRecord = await _unitOfWork.GetRepository<RecordMetricItem>()
                         .Entities
-                        .FirstOrDefaultAsync(ri => ri.RecordId == model.RecordId.Value && ri.Id != id && !ri.DeletedTime.HasValue);
+                        .FirstOrDefaultAsync(ri => ri.HealthRecord.Id == model.RecordId.Value && ri.Id != id && !ri.DeletedTime.HasValue);
                     if (existingRecord != null)
                     {
                         throw new InvalidOperationException($"RecordMetricItem with RecordId {model.RecordId.Value} already exists.");
                     }
-                    recordMetricItem.RecordId = model.RecordId.Value;
+                    //recordMetricItem.RecordId = model.RecordId.Value;
                 }
 
                 // Cập nhật các trường khác nếu có
-                if (!string.IsNullOrWhiteSpace(model.Value))
+                if (model.Value.HasValue)
                 {
-                    recordMetricItem.Value = model.Value.Trim();
+                    recordMetricItem.Value = model.Value;
                 }
 
                 if (!string.IsNullOrWhiteSpace(model.Type))

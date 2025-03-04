@@ -8,7 +8,7 @@ using Contract.Repositories.Interface;
 using Contract.Services.Interface;
 using Microsoft.Extensions.Logging;
 
-namespace FHealthSphere.Services.Services
+namespace Services.Service
 {
     public class MetricGroupService : IMetricGroupService
     {

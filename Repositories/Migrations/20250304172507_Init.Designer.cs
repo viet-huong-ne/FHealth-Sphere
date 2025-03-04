@@ -12,7 +12,7 @@ using Repositories.Base;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(FHealthSphereDBContext))]
-    [Migration("20250304125129_Init")]
+    [Migration("20250304172507_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -489,8 +489,26 @@ namespace Repositories.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedTime")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<decimal?>("DefaultValue")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("DeletedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastUpdatedTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<decimal?>("MaxValue")
                         .HasColumnType("decimal(18,2)");
@@ -719,14 +737,11 @@ namespace Repositories.Migrations
                     b.Property<int?>("MetricId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RecordId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Type")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal?>("Value")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -865,9 +880,11 @@ namespace Repositories.Migrations
 
             modelBuilder.Entity("Contract.Repositories.Entity.Metric", b =>
                 {
-                    b.HasOne("Contract.Repositories.Entity.MetricGroup", null)
+                    b.HasOne("Contract.Repositories.Entity.MetricGroup", "MetricGroup")
                         .WithMany("Tags")
                         .HasForeignKey("MetricGroupId");
+
+                    b.Navigation("MetricGroup");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.NotificationSystem", b =>

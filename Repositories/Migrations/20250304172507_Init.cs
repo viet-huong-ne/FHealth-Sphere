@@ -116,7 +116,13 @@ namespace Repositories.Migrations
                     MinValue = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     MaxValue = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     DefaultValue = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    MetricGroupId = table.Column<int>(type: "int", nullable: true)
+                    MetricGroupId = table.Column<int>(type: "int", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    LastUpdatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    DeletedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -455,9 +461,8 @@ namespace Repositories.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RecordId = table.Column<int>(type: "int", nullable: true),
                     MetricId = table.Column<int>(type: "int", nullable: true),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Value = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     HealthRecordId = table.Column<int>(type: "int", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),

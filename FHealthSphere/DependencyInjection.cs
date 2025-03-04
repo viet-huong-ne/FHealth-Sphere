@@ -47,12 +47,13 @@ namespace FHealthSphere
         {
             services
                 .AddScoped<IUserService, UserService>()
-                .AddScoped<TokenService>();
+                .AddScoped<TokenService>()
          .AddScoped<IBandBrandService, BandBrandService>()
          .AddScoped<IHealthRecordService, HealthRecordService>()
          .AddScoped<IMetricGroupService, MetricGroupService>()
          .AddScoped<IMetricService, MetricService>()
          .AddScoped<IRecordMetricItemService, RecordMetricItemService>()
+         //.AddScoped(IAccountService, AccountService)
          .AddScoped<IBandService, BandService>();
 
         }

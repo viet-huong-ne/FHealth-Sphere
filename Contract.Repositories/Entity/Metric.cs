@@ -21,5 +21,7 @@ namespace Contract.Repositories.Entity
         public decimal? MaxValue { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal? DefaultValue { get; set; }
+
+        public virtual MetricGroup? MetricGroup { get; set; }
     }
 }

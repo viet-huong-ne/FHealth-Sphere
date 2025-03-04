@@ -12,7 +12,7 @@ namespace ModelViews.RecordMetricItemModelViews
         public int? RecordId { get; set; } // Không bắt buộc khi cập nhật
         public int? HealthRecordId { get; set; } // Không bắt buộc khi cập nhật
         public int? MetricId { get; set; } // Không bắt buộc khi cập nhật
-        public string? Value { get; set; } // Không bắt buộc khi cập nhật
+        public decimal? Value { get; set; } // Không bắt buộc khi cập nhật
         public string? Type { get; set; } // Không bắt buộc khi cập nhật
     }
 }

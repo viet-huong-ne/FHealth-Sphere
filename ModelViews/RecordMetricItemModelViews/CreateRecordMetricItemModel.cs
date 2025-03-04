@@ -19,8 +19,8 @@ namespace ModelViews.RecordMetricItemModelViews
         public int MetricId { get; set; }
 
         [Required(ErrorMessage = "Value is required.")]
-        [StringLength(500, ErrorMessage = "Value cannot exceed 500 characters.")]
-        public string Value { get; set; }
+        //[StringLength(500, ErrorMessage = "Value cannot exceed 500 characters.")]
+        public decimal Value { get; set; }
 
         [Required(ErrorMessage = "Type is required.")]
         [StringLength(100, ErrorMessage = "Type cannot exceed 100 characters.")]
