@@ -9,6 +9,7 @@ namespace Contract.Repositories.Entity
 {
     public class PatientInformation : BaseEntity
     {
+        public PatientInformation() { }
         public int Id { get; set; }
         public int AccountId { get; set; }
         public string Gender { get; set; }

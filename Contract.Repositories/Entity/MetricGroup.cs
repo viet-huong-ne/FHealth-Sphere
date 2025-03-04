@@ -12,9 +12,9 @@ namespace Contract.Repositories.Entity
     {
         [Key]
         public int Id { get; set; }
-        public int DisplayOrder {  get; set; }
-        public string Name { get; set; }
-        public string Status { get; set; }
-        public virtual ICollection<Metric> Tags { get; set; }
+        public int? DisplayOrder {  get; set; }
+        public string? Name { get; set; }
+        public string? Status { get; set; }
+        public virtual ICollection<Metric>? Tags { get; set; }
     }
 }

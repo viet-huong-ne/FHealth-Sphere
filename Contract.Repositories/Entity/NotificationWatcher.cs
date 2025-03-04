@@ -20,7 +20,7 @@ namespace Contract.Repositories.Entity
         [Required]
         public bool Status { get; set; }
 
-        public DateTime Time { get; set; }
+        public DateTime? Time { get; set; }
 
         [ForeignKey("WatcherId")]
         public virtual Watcher Watcher { get; set; }

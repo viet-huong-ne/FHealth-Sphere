@@ -18,10 +18,10 @@ namespace Contract.Repositories.Entity
         [ForeignKey("Patient")]
         public int PatientId { get; set; }
 
-        public virtual Account Relative { get; set; }
-        public virtual Account Patient { get; set; }
+        public virtual Account? Relative { get; set; }
+        public virtual Account? Patient { get; set; }
 
-        public virtual ICollection<NotificationWatcher> NotificationWatchers { get; set; }
+        public virtual ICollection<NotificationWatcher>? NotificationWatchers { get; set; }
 
 
     }

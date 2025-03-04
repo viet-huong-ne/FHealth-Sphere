@@ -11,12 +11,14 @@ namespace Contract.Repositories.Entity
     public class Band : BaseEntity
     {
         [Key]
-        public int Id { get; set; }
+        public int Id { get; set; } 
         public int PatientId { get; set; }
-        public string Image { get; set; }
+        public string? Image { get; set; }
+
+        public string? BandCode { get; set; }
 
         public virtual Account Patient { get; set; }
-        public virtual BandBrand BandBrand { get; set; }
+        public virtual BandBrand? BandBrand { get; set; }
 
         public virtual ICollection<HealthRecord> HealthRecords { get; set; }
     }

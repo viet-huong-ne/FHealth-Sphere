@@ -14,12 +14,12 @@ namespace Contract.Repositories.Entity
         [Key]
         public int Id { get; set; }  // ID tự động tăng
         [Required]
-        public int PatientId { get; set; }
-        public int BandId { get; set; }
-        public string GhiChu { get; set; }
+        public int? PatientId { get; set; }
+        public int? BandId { get; set; }
+        public string? GhiChu { get; set; }
         [ForeignKey("PatientId")]
-        public virtual Account Patient { get; set; }
-        public virtual Band Band { get; set; }
+        public virtual Account? Patient { get; set; }
+        public virtual Band? Band { get; set; }
         public virtual ICollection<RecordMetricItem> RecordMetricItems { get; set; }
     }
 }

@@ -14,12 +14,12 @@ namespace Contract.Repositories.Entity
 
         public int Id { get; set; }
         [Required]
-        public int AccountId { get; set; }
-        public string Content { get; set; }
-        public string status { get; set; }
+        public int? AccountId { get; set; }
+        public string? Content { get; set; }
+        public string? status { get; set; }
         [ForeignKey("AccountId")]
-        public virtual Account Accounts { get; set; } 
-        public virtual ICollection<NotificationWatcher> NotificationWatchers { get; set; }
+        public virtual Account? Accounts { get; set; } 
+        public virtual ICollection<NotificationWatcher>? NotificationWatchers { get; set; }
 
 
     }

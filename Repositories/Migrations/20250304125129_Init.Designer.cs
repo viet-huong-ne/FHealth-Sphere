@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Repositories.Base;
 
 #nullable disable
 
-namespace FHealthSphere.Migrations
+namespace Repositories.Migrations
 {
     [DbContext(typeof(FHealthSphereDBContext))]
-    partial class FHealthSphereDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250304125129_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,7 +43,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("CreatedTime")
+                    b.Property<DateTimeOffset?>("CreatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DeletedBy")
@@ -56,10 +59,13 @@ namespace FHealthSphere.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
+                    b.Property<DateTimeOffset?>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<bool>("LockoutEnabled")
@@ -76,15 +82,10 @@ namespace FHealthSphere.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
@@ -128,7 +129,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("CreatedTime")
+                    b.Property<DateTimeOffset?>("CreatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DeletedBy")
@@ -140,7 +141,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
+                    b.Property<DateTimeOffset?>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
@@ -178,7 +179,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("CreatedTime")
+                    b.Property<DateTimeOffset?>("CreatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DeletedBy")
@@ -190,7 +191,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
+                    b.Property<DateTimeOffset?>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<int>("RoleId")
@@ -220,7 +221,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("CreatedTime")
+                    b.Property<DateTimeOffset?>("CreatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DeletedBy")
@@ -232,7 +233,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
+                    b.Property<DateTimeOffset?>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<int>("UserId")
@@ -256,7 +257,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("CreatedTime")
+                    b.Property<DateTimeOffset?>("CreatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DeletedBy")
@@ -268,7 +269,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
+                    b.Property<DateTimeOffset?>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("ProviderDisplayName")
@@ -295,7 +296,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("CreatedTime")
+                    b.Property<DateTimeOffset?>("CreatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DeletedBy")
@@ -307,7 +308,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
+                    b.Property<DateTimeOffset?>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("UserId", "RoleId");
@@ -331,7 +332,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("CreatedTime")
+                    b.Property<DateTimeOffset?>("CreatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DeletedBy")
@@ -343,7 +344,7 @@ namespace FHealthSphere.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
+                    b.Property<DateTimeOffset?>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Value")
@@ -362,11 +363,11 @@ namespace FHealthSphere.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BandBrandId")
+                    b.Property<int?>("BandBrandId")
                         .HasColumnType("int");
 
-                    b.Property<int>("BandTypeId")
-                        .HasColumnType("int");
+                    b.Property<string>("BandCode")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -381,7 +382,6 @@ namespace FHealthSphere.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Image")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastUpdatedBy")
@@ -429,7 +429,6 @@ namespace FHealthSphere.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("NameBrand")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -445,7 +444,7 @@ namespace FHealthSphere.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BandId")
+                    b.Property<int?>("BandId")
                         .HasColumnType("int");
 
                     b.Property<string>("CreatedBy")
@@ -461,7 +460,6 @@ namespace FHealthSphere.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("GhiChu")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastUpdatedBy")
@@ -470,7 +468,8 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("PatientId")
+                    b.Property<int?>("PatientId")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -490,24 +489,22 @@ namespace FHealthSphere.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("DefaultValue")
+                    b.Property<decimal?>("DefaultValue")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("MaxValue")
+                    b.Property<decimal?>("MaxValue")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("MetricGroupId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("MinValue")
+                    b.Property<decimal?>("MinValue")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Unit")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -537,7 +534,7 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("DisplayOrder")
+                    b.Property<int?>("DisplayOrder")
                         .HasColumnType("int");
 
                     b.Property<string>("LastUpdatedBy")
@@ -547,11 +544,9 @@ namespace FHealthSphere.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -567,11 +562,11 @@ namespace FHealthSphere.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AccountId")
+                    b.Property<int?>("AccountId")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CreatedBy")
@@ -593,7 +588,6 @@ namespace FHealthSphere.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("status")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -635,7 +629,7 @@ namespace FHealthSphere.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("Time")
+                    b.Property<DateTime?>("Time")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("WatcherId")
@@ -713,7 +707,7 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("HealthRecordId")
+                    b.Property<int?>("HealthRecordId")
                         .HasColumnType("int");
 
                     b.Property<string>("LastUpdatedBy")
@@ -722,18 +716,16 @@ namespace FHealthSphere.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("MetricId")
+                    b.Property<int?>("MetricId")
                         .HasColumnType("int");
 
-                    b.Property<int>("RecordId")
+                    b.Property<int?>("RecordId")
                         .HasColumnType("int");
 
                     b.Property<string>("Type")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Value")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -841,9 +833,7 @@ namespace FHealthSphere.Migrations
                 {
                     b.HasOne("Contract.Repositories.Entity.BandBrand", "BandBrand")
                         .WithMany("Bands")
-                        .HasForeignKey("BandBrandId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("BandBrandId");
 
                     b.HasOne("Contract.Repositories.Entity.Account", "Patient")
                         .WithMany("Bands")
@@ -860,9 +850,7 @@ namespace FHealthSphere.Migrations
                 {
                     b.HasOne("Contract.Repositories.Entity.Band", "Band")
                         .WithMany("HealthRecords")
-                        .HasForeignKey("BandId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("BandId");
 
                     b.HasOne("Contract.Repositories.Entity.Account", "Patient")
                         .WithMany("HealthRecords")
@@ -927,15 +915,11 @@ namespace FHealthSphere.Migrations
                 {
                     b.HasOne("Contract.Repositories.Entity.HealthRecord", "HealthRecord")
                         .WithMany("RecordMetricItems")
-                        .HasForeignKey("HealthRecordId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("HealthRecordId");
 
                     b.HasOne("Contract.Repositories.Entity.Metric", "Metric")
                         .WithMany()
-                        .HasForeignKey("MetricId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MetricId");
 
                     b.Navigation("HealthRecord");
 

@@ -7,7 +7,7 @@ using Services;
 using Services.Service;
 using Repositories.Base;
 
-namespace XuongMayBE.API
+namespace FHealthSphere
 {
     public static class DependencyInjection
     {
@@ -15,7 +15,7 @@ namespace XuongMayBE.API
         {
             services.ConfigRoute();
             services.AddDatabase(configuration);
-            services.AddIdentity();
+            //services.AddIdentity();
             services.AddInfrastructure(configuration);
             services.AddServices();
         }
@@ -34,18 +34,20 @@ namespace XuongMayBE.API
             });
         }
 
-        public static void AddIdentity(this IServiceCollection services)
-        {
-            services.AddIdentity<Account, ApplicationRole>(options =>
-            {
-            })
-             .AddEntityFrameworkStores<FHealthSphereDBContext>()
-             .AddDefaultTokenProviders();
-        }
+        //public static void AddIdentity(this IServiceCollection services)
+        //{
+        //    services.AddIdentity<Account, ApplicationRole>(options =>
+        //    {
+        //    })
+        //     .AddEntityFrameworkStores<FHealthSphereDBContext>()
+        //     .AddDefaultTokenProviders();
+        //}
         public static void AddServices(this IServiceCollection services)
         {
             services
-                .AddScoped<IBandBrandService, BandBrandService>();
+                .AddScoped<IUserService, UserService>()
+                .AddScoped<IBandBrandService, BandBrandService>()
+                .AddScoped<TokenService>();
         }
     }
 }

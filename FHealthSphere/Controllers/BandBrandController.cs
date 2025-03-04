@@ -1,6 +1,7 @@
 ﻿using Contract.Repositories.Entity;
 using Contract.Services.Interface;
 using Core.Base;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.BandBrandModelViews;
@@ -10,6 +11,7 @@ namespace FHealthSphere.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BandBrandController : ControllerBase
     {
         private readonly IBandBrandService _brandService;
@@ -17,12 +19,13 @@ namespace FHealthSphere.Controllers
         {
             _brandService = brandService;
         }
-        [HttpGet("Brand")]
-        public async Task<ActionResult<BasePaginatedList<BandBrand>>> GetAllBandBrand(int pageNumber, int pageSize)
+        [HttpGet("band-brand")]
+        public async Task<ActionResult<BasePaginatedList<BandBrand>>> GetAllBandBrand(int pageNumber = 1, int pageSize = 6)
         {
             try
             {
                 var Brands = await _brandService.GetAllBandBrand(pageNumber, pageSize);
+                Console.WriteLine(DateTimeOffset.Now);
                 return Ok(BaseResponse<BasePaginatedList<BandBrand>>.OkResponse(Brands));
             }
             catch (Exception ex) 
@@ -30,7 +33,8 @@ namespace FHealthSphere.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpPost("new-Brand")]
+        [HttpPost("band-brand")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddBandBrand([FromBody] CreateBandBrandModel model)
         {
             try

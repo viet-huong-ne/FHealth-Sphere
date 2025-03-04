@@ -12,13 +12,13 @@ namespace Contract.Repositories.Entity
     {
         [Key]
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Unit { get; set; }
+        public string? Name { get; set; }
+        public string? Unit { get; set; }
         [Column(TypeName = "decimal(18,2)")]
-        public decimal MinValue { get; set; }
+        public decimal? MinValue { get; set; }
         [Column(TypeName = "decimal(18,2)")]
-        public decimal MaxValue { get; set; }
+        public decimal? MaxValue { get; set; }
         [Column(TypeName = "decimal(18,2)")]
-        public decimal DefaultValue { get; set; }
+        public decimal? DefaultValue { get; set; }
     }
 }
