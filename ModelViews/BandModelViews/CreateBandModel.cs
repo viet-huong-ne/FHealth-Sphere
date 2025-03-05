@@ -18,5 +18,7 @@ namespace ModelViews.BandModelViews
         [Required(ErrorMessage = "Image is required.")]
         [StringLength(500, ErrorMessage = "Image cannot exceed 500 characters.")]
         public string Image { get; set; }
+        [Required(ErrorMessage = "BandCode is required.")]
+        public string BandCode { get; set; }
     }
 }

@@ -11,5 +11,6 @@ namespace ModelViews.BandModelViews
         public int? PatientId { get; set; } // Không bắt buộc khi cập nhật
         public int? BandBrandId { get; set; } // Không bắt buộc khi cập nhật
         public string? Image { get; set; } // Không bắt buộc khi cập nhật
+        public string? BandCode { get; set; }
     }
 }

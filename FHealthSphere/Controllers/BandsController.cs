@@ -28,6 +28,7 @@ namespace FHealthSphere.Controllers
     [FromQuery] int? patientId = null,
     [FromQuery] int? bandBrandId = null,
     [FromQuery] string image = null,
+    [FromQuery] string bandCode = null,
     [FromQuery] string sortBy = null,
     [FromQuery] string sortOrder = "asc",
     [FromQuery] DateTime? createdStartDate = null,
@@ -83,7 +84,7 @@ namespace FHealthSphere.Controllers
                     return BadRequest("deletedStartDate must be less than or equal to deletedEndDate.");
                 }
 
-                var bands = await _bandService.GetAllBands(pageNumber, pageSize, patientId, bandBrandId, image, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
+                var bands = await _bandService.GetAllBands(pageNumber, pageSize, patientId, bandBrandId, image, bandCode, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
                 return Ok(BaseResponse<BasePaginatedList<Band>>.OkResponse(bands));
             }
             catch (Exception ex)

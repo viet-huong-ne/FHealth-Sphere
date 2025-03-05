@@ -49,6 +49,7 @@ namespace Services.Service
             {
                 PatientId = model.PatientId,
                 Image = model.Image.Trim(),
+                BandCode = model.BandCode?.Trim(),
                 BandBrand = bandbrand,
                 CreatedBy = "System",
                 CreatedTime = DateTimeOffset.Now,
@@ -60,7 +61,7 @@ namespace Services.Service
             return band;
         }
 
-        public async Task<BasePaginatedList<Band>> GetAllBands(int pageNumber, int pageSize, int? patientId = null, int? bandBrandId = null, string image = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
+        public async Task<BasePaginatedList<Band>> GetAllBands(int pageNumber, int pageSize, int? patientId = null, int? bandBrandId = null, string image = null, string bandCode = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
         {
             try
             {
@@ -85,6 +86,10 @@ namespace Services.Service
                 if (!string.IsNullOrWhiteSpace(image))
                 {
                     bandsQuery = bandsQuery.Where(b => b.Image.Contains(image));
+                }
+                if (!string.IsNullOrWhiteSpace(bandCode))
+                {
+                    bandsQuery = bandsQuery.Where(b => b.BandCode != null && b.BandCode.Contains(bandCode));
                 }
                 if (createdStartDate.HasValue)
                 {
@@ -167,6 +172,11 @@ namespace Services.Service
                             bandsQuery = sortOrder.ToLower() == "desc"
                                 ? bandsQuery.OrderByDescending(b => b.Image)
                                 : bandsQuery.OrderBy(b => b.Image);
+                            break;
+                        case "bandcode":
+                            bandsQuery = sortOrder.ToLower() == "desc"
+                                ? bandsQuery.OrderByDescending(b => b.BandCode)
+                                : bandsQuery.OrderBy(b => b.BandCode);
                             break;
                         default:
                             bandsQuery = bandsQuery.OrderByDescending(b => b.CreatedTime); // Mặc định
@@ -259,6 +269,7 @@ namespace Services.Service
             {
                 band.Image = model.Image.Trim();
             }
+            if (!string.IsNullOrWhiteSpace(model.BandCode)) band.BandCode = model.BandCode.Trim();
 
             band.LastUpdatedTime = DateTimeOffset.Now;
             band.LastUpdatedBy = "System";
@@ -283,5 +294,6 @@ namespace Services.Service
             await _unitOfWork.SaveAsync();
             return true;
         }
+
     }
 }
