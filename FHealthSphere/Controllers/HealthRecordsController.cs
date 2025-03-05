@@ -93,8 +93,10 @@ namespace FHealthSphere.Controllers
             {
                 var result = await _healthRecordService.DeleteHealthRecord(id);
                 if (!result)
+                {
                     return NotFound($"HealthRecord with ID {id} not found or already deleted.");
-                return Ok($"HealthRecord with ID {id} successfully soft deleted.");
+                }
+                return Ok($"HealthRecord with ID {id} and its RecordMetricItems successfully soft deleted.");
             }
             catch (Exception ex)
             {

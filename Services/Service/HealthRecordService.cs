@@ -221,13 +221,24 @@ namespace FHealthSphere.Services.Services
         {
             var healthRecord = await _unitOfWork.GetRepository<HealthRecord>()
                 .Entities
+                .Include(hr => hr.RecordMetricItems) // Bao gồm RecordMetricItems để truy cập
                 .FirstOrDefaultAsync(hr => hr.Id == id && !hr.DeletedTime.HasValue);
 
             if (healthRecord == null)
+            {
                 return false;
+            }
 
+            // Xóa mềm HealthRecord
             healthRecord.DeletedTime = DateTimeOffset.Now;
             healthRecord.DeletedBy = "System";
+
+            // Xóa mềm tất cả RecordMetricItems liên quan
+            foreach (var item in healthRecord.RecordMetricItems.Where(ri => !ri.DeletedTime.HasValue))
+            {
+                item.DeletedTime = DateTimeOffset.Now;
+                item.DeletedBy = "System";
+            }
 
             await _unitOfWork.GetRepository<HealthRecord>().UpdateAsync(healthRecord);
             await _unitOfWork.SaveAsync();
