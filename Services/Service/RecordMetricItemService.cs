@@ -61,15 +61,15 @@ namespace Services.Service
                 // Kiểm tra duy nhất RecordId nếu cần (tùy ý)
                 var existingRecord = await _unitOfWork.GetRepository<RecordMetricItem>()
                     .Entities
-                    .FirstOrDefaultAsync(ri => ri.HealthRecord.Id == model.RecordId && !ri.DeletedTime.HasValue);
+                    .FirstOrDefaultAsync(ri => ri.HealthRecordId == model.RecordId && !ri.DeletedTime.HasValue);
                 if (existingRecord != null)
                 {
                     throw new InvalidOperationException($"RecordMetricItem with RecordId {model.RecordId} already exists.");
                 }
-                var healthRecord = await _unitOfWork.GetRepository<HealthRecord>().GetByIdAsync(model.HealthRecordId);
+
                 var recordMetricItem = new RecordMetricItem
                 {
-                    HealthRecord = healthRecord,
+                    HealthRecordId = model.HealthRecordId, // Sử dụng HealthRecordId thay vì set HealthRecord
                     MetricId = model.MetricId,
                     Value = model.Value,
                     Type = model.Type.Trim(),
@@ -89,11 +89,31 @@ namespace Services.Service
             }
         }
 
-        public async Task<BasePaginatedList<RecordMetricItem>> GetAllRecordMetricItems(int pageNumber, int pageSize, int? recordId = null, int? healthRecordId = null, int? metricId = null, decimal? value = null, string type = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
+        public async Task<BasePaginatedList<RecordMetricItem>> GetAllRecordMetricItems(
+            int pageNumber,
+            int pageSize,
+            int? recordId = null,
+            int? healthRecordId = null,
+            int? metricId = null,
+            decimal? value = null,
+            string type = null,
+            string sortBy = null,
+            string sortOrder = "asc",
+            DateTime? createdStartDate = null,
+            DateTime? createdEndDate = null,
+            DateTime? updatedStartDate = null,
+            DateTime? updatedEndDate = null,
+            DateTime? deletedStartDate = null,
+            DateTime? deletedEndDate = null,
+            string createdBy = null,
+            string updatedBy = null,
+            string deletedBy = null,
+            bool? isActive = null)
         {
             try
             {
-                _logger.LogInformation("Fetching all RecordMetricItems with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, RecordId: {RecordId}, HealthRecordId: {HealthRecordId}, MetricId: {MetricId}, Value: {Value}, Type: {Type}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}, IsActive: {IsActive}", pageNumber, pageSize, recordId, healthRecordId, metricId, value, type, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
+                _logger.LogInformation("Fetching all RecordMetricItems with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, RecordId: {RecordId}, HealthRecordId: {HealthRecordId}, MetricId: {MetricId}, Value: {Value}, Type: {Type}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}, IsActive: {IsActive}",
+                    pageNumber, pageSize, recordId, healthRecordId, metricId, value, type, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
 
                 if (pageNumber < 1) pageNumber = 1;
                 if (pageSize < 1) pageSize = 10;
@@ -103,13 +123,10 @@ namespace Services.Service
                     .AsQueryable();
 
                 // Áp dụng bộ lọc
-                if (recordId.HasValue)
+                if (recordId.HasValue || healthRecordId.HasValue)
                 {
-                    itemsQuery = itemsQuery.Where(ri => ri.HealthRecord.Id == recordId.Value);
-                }
-                if (healthRecordId.HasValue)
-                {
-                    itemsQuery = itemsQuery.Where(ri => ri.HealthRecord.Id == healthRecordId.Value);
+                    int filterId = recordId.HasValue ? recordId.Value : healthRecordId.Value;
+                    itemsQuery = itemsQuery.Where(ri => ri.HealthRecordId == filterId);
                 }
                 if (metricId.HasValue)
                 {
@@ -164,7 +181,6 @@ namespace Services.Service
                     itemsQuery = itemsQuery.Where(ri => (ri.DeletedTime.HasValue == !isActive.Value));
                 }
 
-                // Loại bỏ các bản ghi bị soft delete nếu không có bộ lọc DeletedTime hoặc isActive
                 if (!deletedStartDate.HasValue && !deletedEndDate.HasValue && !isActive.HasValue)
                 {
                     itemsQuery = itemsQuery.Where(ri => !ri.DeletedTime.HasValue);
@@ -175,15 +191,10 @@ namespace Services.Service
                 {
                     switch (sortBy.ToLower())
                     {
-                        //case "recordid":
-                        //    itemsQuery = sortOrder.ToLower() == "desc"
-                        //        ? itemsQuery.OrderByDescending(ri => ri.HealthRecord.Id)
-                        //        : itemsQuery.OrderBy(ri => ri.HealthRecord.Id);
-                        //    break;
                         case "healthrecordid":
                             itemsQuery = sortOrder.ToLower() == "desc"
-                                ? itemsQuery.OrderByDescending(ri => ri.HealthRecord.Id)
-                                : itemsQuery.OrderBy(ri => ri.HealthRecord.Id);
+                                ? itemsQuery.OrderByDescending(ri => ri.HealthRecordId)
+                                : itemsQuery.OrderBy(ri => ri.HealthRecordId);
                             break;
                         case "metricid":
                             itemsQuery = sortOrder.ToLower() == "desc"
@@ -216,20 +227,18 @@ namespace Services.Service
                                 : itemsQuery.OrderBy(ri => ri.DeletedTime ?? DateTimeOffset.MinValue);
                             break;
                         default:
-                            itemsQuery = itemsQuery.OrderByDescending(ri => ri.CreatedTime); // Mặc định
+                            itemsQuery = itemsQuery.OrderByDescending(ri => ri.CreatedTime);
                             break;
                     }
                 }
                 else
                 {
-                    itemsQuery = itemsQuery.OrderByDescending(ri => ri.CreatedTime); // Mặc định
+                    itemsQuery = itemsQuery.OrderByDescending(ri => ri.CreatedTime);
                 }
 
                 int totalCount = await itemsQuery.CountAsync();
 
                 var items = await itemsQuery
-                    .Include(ri => ri.HealthRecord)
-                    .Include(ri => ri.Metric)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
@@ -252,8 +261,6 @@ namespace Services.Service
                 var recordMetricItem = await _unitOfWork.GetRepository<RecordMetricItem>()
                     .Entities
                     .Where(ri => ri.Id == id && !ri.DeletedTime.HasValue)
-                    .Include(ri => ri.HealthRecord)
-                    .Include(ri => ri.Metric)
                     .FirstOrDefaultAsync();
 
                 if (recordMetricItem == null)
@@ -269,6 +276,7 @@ namespace Services.Service
                 throw;
             }
         }
+
         public async Task<RecordMetricItem> UpdateRecordMetricItem(int id, UpdateRecordMetricItemModel model)
         {
             try
@@ -289,7 +297,6 @@ namespace Services.Service
                     throw new KeyNotFoundException($"RecordMetricItem with ID {id} not found or already deleted.");
                 }
 
-                // Kiểm tra sự tồn tại của HealthRecordId nếu được cập nhật
                 if (model.HealthRecordId.HasValue)
                 {
                     var healthRecordExists = await _unitOfWork.GetRepository<HealthRecord>()
@@ -299,10 +306,9 @@ namespace Services.Service
                     {
                         throw new KeyNotFoundException($"HealthRecord with ID {model.HealthRecordId.Value} not found.");
                     }
-                    recordMetricItem.HealthRecord.Id = model.HealthRecordId.Value;
+                    recordMetricItem.HealthRecordId = model.HealthRecordId.Value; // Sử dụng HealthRecordId
                 }
 
-                // Kiểm tra sự tồn tại của MetricId nếu được cập nhật
                 if (model.MetricId.HasValue)
                 {
                     var metricExists = await _unitOfWork.GetRepository<Metric>()
@@ -315,20 +321,18 @@ namespace Services.Service
                     recordMetricItem.MetricId = model.MetricId.Value;
                 }
 
-                // Kiểm tra duy nhất của RecordId nếu được cập nhật (tùy chọn)
-                if (model.RecordId.HasValue && model.RecordId.Value != recordMetricItem.HealthRecord.Id)
+                if (model.RecordId.HasValue && model.RecordId.Value != recordMetricItem.HealthRecordId)
                 {
                     var existingRecord = await _unitOfWork.GetRepository<RecordMetricItem>()
                         .Entities
-                        .FirstOrDefaultAsync(ri => ri.HealthRecord.Id == model.RecordId.Value && ri.Id != id && !ri.DeletedTime.HasValue);
+                        .FirstOrDefaultAsync(ri => ri.HealthRecordId == model.RecordId.Value && ri.Id != id && !ri.DeletedTime.HasValue);
                     if (existingRecord != null)
                     {
                         throw new InvalidOperationException($"RecordMetricItem with RecordId {model.RecordId.Value} already exists.");
                     }
-                    //recordMetricItem.RecordId = model.RecordId.Value;
+                    recordMetricItem.HealthRecordId = model.RecordId.Value; // Cập nhật HealthRecordId
                 }
 
-                // Cập nhật các trường khác nếu có
                 if (model.Value.HasValue)
                 {
                     recordMetricItem.Value = model.Value;
@@ -339,9 +343,8 @@ namespace Services.Service
                     recordMetricItem.Type = model.Type.Trim();
                 }
 
-                // Cập nhật metadata
                 recordMetricItem.LastUpdatedTime = DateTimeOffset.Now;
-                recordMetricItem.LastUpdatedBy = "System"; // Nên lấy từ context người dùng hiện tại nếu có
+                recordMetricItem.LastUpdatedBy = "System";
 
                 await _unitOfWork.GetRepository<RecordMetricItem>().UpdateAsync(recordMetricItem);
                 await _unitOfWork.SaveAsync();
@@ -366,16 +369,11 @@ namespace Services.Service
             }
 
             recordMetricItem.DeletedTime = DateTimeOffset.Now;
-            recordMetricItem.DeletedBy = "System"; // Nên lấy từ context người dùng hiện tại nếu có
+            recordMetricItem.DeletedBy = "System";
 
             await _unitOfWork.GetRepository<RecordMetricItem>().UpdateAsync(recordMetricItem);
             await _unitOfWork.SaveAsync();
             return true;
-        }
-
-        public Task<HealthRecord> GetHealthRecordById(int id)
-        {
-            throw new NotImplementedException();
         }
     }
 }

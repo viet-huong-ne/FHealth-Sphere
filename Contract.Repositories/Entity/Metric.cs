@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Contract.Repositories.Entity
@@ -21,7 +22,9 @@ namespace Contract.Repositories.Entity
         public decimal? MaxValue { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal? DefaultValue { get; set; }
+        public int? MetricGroupId { get; set; }
 
+        [JsonIgnore]
         public virtual MetricGroup? MetricGroup { get; set; }
     }
 }

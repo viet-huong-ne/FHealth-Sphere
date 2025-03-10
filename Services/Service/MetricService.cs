@@ -49,7 +49,7 @@ namespace Services.Service
                     throw new KeyNotFoundException($"MetricGroup with ID {model.MetricGroupId.Value} not found.");
                 }
             }
-            var metricGroup = await _unitOfWork.GetRepository<MetricGroup>().GetByIdAsync(model.MetricGroupId.Value);
+
             var metric = new Metric
             {
                 Name = model.Name.Trim(),
@@ -57,8 +57,8 @@ namespace Services.Service
                 MinValue = model.MinValue,
                 MaxValue = model.MaxValue,
                 DefaultValue = model.DefaultValue,
-                MetricGroup = metricGroup,
-                CreatedBy = "System", // Nên lấy từ context người dùng hiện tại nếu có
+                MetricGroupId = model.MetricGroupId, // Sử dụng MetricGroupId thay vì set MetricGroup
+                CreatedBy = "System",
                 CreatedTime = DateTimeOffset.Now,
                 LastUpdatedTime = DateTimeOffset.Now
             };
@@ -68,11 +68,29 @@ namespace Services.Service
             return metric;
         }
 
-        public async Task<BasePaginatedList<Metric>> GetAllMetrics(int pageNumber, int pageSize, string name = null, string unit = null, int? metricGroupId = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
+        public async Task<BasePaginatedList<Metric>> GetAllMetrics(
+            int pageNumber,
+            int pageSize,
+            string name = null,
+            string unit = null,
+            int? metricGroupId = null,
+            string sortBy = null,
+            string sortOrder = "asc",
+            DateTime? createdStartDate = null,
+            DateTime? createdEndDate = null,
+            DateTime? updatedStartDate = null,
+            DateTime? updatedEndDate = null,
+            DateTime? deletedStartDate = null,
+            DateTime? deletedEndDate = null,
+            string createdBy = null,
+            string updatedBy = null,
+            string deletedBy = null,
+            bool? isActive = null)
         {
             try
             {
-                _logger.LogInformation("Fetching all Metrics with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, Name: {Name}, Unit: {Unit}, MetricGroupId: {MetricGroupId}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}, IsActive: {IsActive}", pageNumber, pageSize, name, unit, metricGroupId, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
+                _logger.LogInformation("Fetching all Metrics with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, Name: {Name}, Unit: {Unit}, MetricGroupId: {MetricGroupId}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}, IsActive: {IsActive}",
+                    pageNumber, pageSize, name, unit, metricGroupId, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
 
                 if (pageNumber < 1) pageNumber = 1;
                 if (pageSize < 1) pageSize = 10;
@@ -92,7 +110,7 @@ namespace Services.Service
                 }
                 if (metricGroupId.HasValue)
                 {
-                    metricsQuery = metricsQuery.Where(m => m.MetricGroup.Id == metricGroupId.Value);
+                    metricsQuery = metricsQuery.Where(m => m.MetricGroupId == metricGroupId.Value);
                 }
                 if (createdStartDate.HasValue)
                 {
@@ -135,7 +153,6 @@ namespace Services.Service
                     metricsQuery = metricsQuery.Where(m => (m.DeletedTime.HasValue == !isActive.Value));
                 }
 
-                // Loại bỏ các bản ghi bị soft delete nếu không có bộ lọc DeletedTime hoặc isActive
                 if (!deletedStartDate.HasValue && !deletedEndDate.HasValue && !isActive.HasValue)
                 {
                     metricsQuery = metricsQuery.Where(m => !m.DeletedTime.HasValue);
@@ -173,8 +190,8 @@ namespace Services.Service
                             break;
                         case "metricgroupid":
                             metricsQuery = sortOrder.ToLower() == "desc"
-                                ? metricsQuery.OrderByDescending(m => m.MetricGroup.Id)
-                                : metricsQuery.OrderBy(m => m.MetricGroup.Id);
+                                ? metricsQuery.OrderByDescending(m => m.MetricGroupId)
+                                : metricsQuery.OrderBy(m => m.MetricGroupId);
                             break;
                         case "createdtime":
                             metricsQuery = sortOrder.ToLower() == "desc"
@@ -192,19 +209,18 @@ namespace Services.Service
                                 : metricsQuery.OrderBy(m => m.DeletedTime ?? DateTimeOffset.MinValue);
                             break;
                         default:
-                            metricsQuery = metricsQuery.OrderByDescending(m => m.CreatedTime); // Mặc định
+                            metricsQuery = metricsQuery.OrderByDescending(m => m.CreatedTime);
                             break;
                     }
                 }
                 else
                 {
-                    metricsQuery = metricsQuery.OrderByDescending(m => m.CreatedTime); // Mặc định
+                    metricsQuery = metricsQuery.OrderByDescending(m => m.CreatedTime);
                 }
 
                 int totalCount = await metricsQuery.CountAsync();
 
                 var metrics = await metricsQuery
-                    .Include(m => m.MetricGroup)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
@@ -227,7 +243,6 @@ namespace Services.Service
                 var metric = await _unitOfWork.GetRepository<Metric>()
                     .Entities
                     .Where(m => m.Id == id && !m.DeletedTime.HasValue)
-                    .Include(m => m.MetricGroup)
                     .FirstOrDefaultAsync();
 
                 if (metric == null)
@@ -270,7 +285,7 @@ namespace Services.Service
                 {
                     throw new KeyNotFoundException($"MetricGroup with ID {model.MetricGroupId.Value} not found.");
                 }
-                metric.MetricGroup.Id = model.MetricGroupId.Value;
+                metric.MetricGroupId = model.MetricGroupId.Value; // Sử dụng MetricGroupId
             }
 
             if (!string.IsNullOrWhiteSpace(model.Name))
@@ -299,7 +314,7 @@ namespace Services.Service
             }
 
             metric.LastUpdatedTime = DateTimeOffset.Now;
-            metric.LastUpdatedBy = "System"; // Nên lấy từ context người dùng hiện tại nếu có
+            metric.LastUpdatedBy = "System";
 
             await _unitOfWork.GetRepository<Metric>().UpdateAsync(metric);
             await _unitOfWork.SaveAsync();
@@ -318,12 +333,11 @@ namespace Services.Service
             }
 
             metric.DeletedTime = DateTimeOffset.Now;
-            metric.DeletedBy = "System"; // Nên lấy từ context người dùng hiện tại nếu có
+            metric.DeletedBy = "System";
 
             await _unitOfWork.GetRepository<Metric>().UpdateAsync(metric);
             await _unitOfWork.SaveAsync();
             return true;
         }
-
     }
 }

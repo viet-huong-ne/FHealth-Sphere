@@ -26,7 +26,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<JsonOptions>(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-    options.JsonSerializerOptions.MaxDepth = 64; 
+    options.JsonSerializerOptions.MaxDepth = 64;
 });
 
 builder.Services.AddDbContext<FHealthSphereDBContext>(options =>
@@ -38,6 +38,8 @@ builder.Services.AddDbContext<FHealthSphereDBContext>(options =>
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
+        //options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        //options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
 builder.Services.AddLogging();

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace ModelViews.MetricModelViews
 {
+
+
+    [ValidateMetricRange]
     public class UpdateMetricModel
     {
         public string? Name { get; set; } // Không bắt buộc khi cập nhật

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace Contract.Repositories.Entity
 {
@@ -12,9 +13,10 @@ namespace Contract.Repositories.Entity
     {
         [Key]
         public int Id { get; set; }
-        public int? DisplayOrder {  get; set; }
+        public int? DisplayOrder { get; set; }
         public string? Name { get; set; }
         public string? Status { get; set; }
+        [JsonIgnore]
         public virtual ICollection<Metric>? Tags { get; set; }
     }
 }

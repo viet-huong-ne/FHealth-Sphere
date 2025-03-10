@@ -13,7 +13,7 @@ namespace FHealthSphere.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class BandBrandsController : ControllerBase
     {
         private readonly IBandBrandService _brandService;

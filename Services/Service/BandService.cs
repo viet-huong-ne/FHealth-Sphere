@@ -44,13 +44,13 @@ namespace Services.Service
             {
                 throw new KeyNotFoundException($"BandBrand with ID {model.BandBrandId} not found.");
             }
-            var bandbrand = await _unitOfWork.GetRepository<BandBrand>().GetByIdAsync(model.BandBrandId);
+            //var bandbrand = await _unitOfWork.GetRepository<BandBrand>().GetByIdAsync(model.BandBrandId);
             var band = new Band
             {
                 PatientId = model.PatientId,
                 Image = model.Image.Trim(),
                 BandCode = model.BandCode?.Trim(),
-                BandBrand = bandbrand,
+                BandBrandId = model.BandBrandId,
                 CreatedBy = "System",
                 CreatedTime = DateTimeOffset.Now,
                 LastUpdatedTime = DateTimeOffset.Now
@@ -81,7 +81,7 @@ namespace Services.Service
                 }
                 if (bandBrandId.HasValue)
                 {
-                    bandsQuery = bandsQuery.Where(b => b.BandBrand.Id == bandBrandId.Value);
+                    bandsQuery = bandsQuery.Where(b => b.BandBrandId == bandBrandId.Value);
                 }
                 if (!string.IsNullOrWhiteSpace(image))
                 {
@@ -150,8 +150,8 @@ namespace Services.Service
                             break;
                         case "bandbrandid":
                             bandsQuery = sortOrder.ToLower() == "desc"
-                                ? bandsQuery.OrderByDescending(b => b.BandBrand.Id)
-                                : bandsQuery.OrderBy(b => b.BandBrand.Id);
+                                ? bandsQuery.OrderByDescending(b => b.BandBrandId)
+                                : bandsQuery.OrderBy(b => b.BandBrandId);
                             break;
                         case "createdtime":
                             bandsQuery = sortOrder.ToLower() == "desc"
@@ -191,8 +191,8 @@ namespace Services.Service
                 int totalCount = await bandsQuery.CountAsync();
 
                 var bands = await bandsQuery
-                    .Include(b => b.Patient)
-                    .Include(b => b.BandBrand)
+                    //.Include(b => b.Patient)
+                    //.Include(b => b.BandBrand)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
@@ -214,8 +214,8 @@ namespace Services.Service
                 var band = await _unitOfWork.GetRepository<Band>()
                     .Entities
                     .Where(b => b.Id == id && !b.DeletedTime.HasValue)
-                    .Include(b => b.Patient)
-                    .Include(b => b.BandBrand)
+                    //.Include(b => b.Patient)
+                    //.Include(b => b.BandBrand)
                     .FirstOrDefaultAsync();
 
                 if (band == null)
@@ -262,7 +262,7 @@ namespace Services.Service
                 {
                     throw new KeyNotFoundException($"BandBrand with ID {model.BandBrandId.Value} not found.");
                 }
-                band.BandBrand.Id = model.BandBrandId.Value;
+                band.BandBrandId = model.BandBrandId.Value;
             }
 
             if (!string.IsNullOrWhiteSpace(model.Image))

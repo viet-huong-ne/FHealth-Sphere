@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Contract.Repositories.Entity
@@ -11,6 +12,7 @@ namespace Contract.Repositories.Entity
     {
         public int Id { get; set; }
         public string? NameBrand { get; set; }
+        [JsonIgnore]
         public virtual ICollection<Band> Bands { get; set; }
     }
 }

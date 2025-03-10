@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "783423717298",
+    "project_id": "fhealsphere",
+    "storage_bucket": "fhealsphere.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:783423717298:android:12ac671d490b4dc95a2eab",
+        "android_client_info": {
+          "package_name": "com.FPTU.FHealthsphere"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWX2D7b0yykJ5ZcIbaXv11W1SdhwgluUs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

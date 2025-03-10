@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Contract.Repositories.Entity
@@ -18,8 +19,11 @@ namespace Contract.Repositories.Entity
         public int? BandId { get; set; }
         public string? GhiChu { get; set; }
         [ForeignKey("PatientId")]
+        [JsonIgnore]
         public virtual Account? Patient { get; set; }
+        [JsonIgnore]
         public virtual Band? Band { get; set; }
+
         public virtual ICollection<RecordMetricItem> RecordMetricItems { get; set; }
     }
 }
