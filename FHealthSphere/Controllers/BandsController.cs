@@ -26,7 +26,6 @@ namespace FHealthSphere.Controllers
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10,
     [FromQuery] int? patientId = null,
-    [FromQuery] int? bandBrandId = null,
     [FromQuery] string image = null,
     [FromQuery] string bandCode = null,
     [FromQuery] string sortBy = null,

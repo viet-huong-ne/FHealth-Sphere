@@ -172,7 +172,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAllOrigins",
         builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
-
+builder.Services.AddHttpClient();
 var app = builder.Build();
 
 // Middleware pipeline

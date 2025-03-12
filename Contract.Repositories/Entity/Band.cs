@@ -17,7 +17,6 @@ namespace Contract.Repositories.Entity
         public string? Image { get; set; }
 
         public string? BandCode { get; set; }
-        public int BandBrandId { get; set; }
         [JsonIgnore]
         public virtual Account Patient { get; set; }
         [JsonIgnore]

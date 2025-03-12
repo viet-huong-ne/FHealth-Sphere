@@ -44,13 +44,13 @@ namespace Services.Service
             {
                 throw new KeyNotFoundException($"BandBrand with ID {model.BandBrandId} not found.");
             }
-            //var bandbrand = await _unitOfWork.GetRepository<BandBrand>().GetByIdAsync(model.BandBrandId);
+
             var band = new Band
             {
                 PatientId = model.PatientId,
                 Image = model.Image.Trim(),
                 BandCode = model.BandCode?.Trim(),
-                BandBrandId = model.BandBrandId,
+                //BandBrandId = model.BandBrandId,
                 CreatedBy = "System",
                 CreatedTime = DateTimeOffset.Now,
                 LastUpdatedTime = DateTimeOffset.Now
@@ -61,11 +61,11 @@ namespace Services.Service
             return band;
         }
 
-        public async Task<BasePaginatedList<Band>> GetAllBands(int pageNumber, int pageSize, int? patientId = null, int? bandBrandId = null, string image = null, string bandCode = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
+        public async Task<BasePaginatedList<Band>> GetAllBands(int pageNumber, int pageSize, int? patientId = null, string image = null, string bandCode = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null, DateTime? updatedStartDate = null, DateTime? updatedEndDate = null, DateTime? deletedStartDate = null, DateTime? deletedEndDate = null, string createdBy = null, string updatedBy = null, string deletedBy = null, bool? isActive = null)
         {
             try
             {
-                _logger.LogInformation("Fetching all Bands with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, PatientId: {PatientId}, BandBrandId: {BandBrandId}, Image: {Image}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}, IsActive: {IsActive}", pageNumber, pageSize, patientId, bandBrandId, image, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
+                _logger.LogInformation("Fetching all Bands with filters - PageNumber: {PageNumber}, PageSize: {PageSize}, PatientId: {PatientId}, Image: {Image}, SortBy: {SortBy}, SortOrder: {SortOrder}, CreatedStartDate: {CreatedStartDate}, CreatedEndDate: {CreatedEndDate}, UpdatedStartDate: {UpdatedStartDate}, UpdatedEndDate: {UpdatedEndDate}, DeletedStartDate: {DeletedStartDate}, DeletedEndDate: {DeletedEndDate}, CreatedBy: {CreatedBy}, UpdatedBy: {UpdatedBy}, DeletedBy: {DeletedBy}, IsActive: {IsActive}", pageNumber, pageSize, patientId, image, sortBy, sortOrder, createdStartDate, createdEndDate, updatedStartDate, updatedEndDate, deletedStartDate, deletedEndDate, createdBy, updatedBy, deletedBy, isActive);
 
                 if (pageNumber < 1) pageNumber = 1;
                 if (pageSize < 1) pageSize = 10;
@@ -74,14 +74,10 @@ namespace Services.Service
                     .Entities
                     .AsQueryable();
 
-                // Áp dụng bộ lọc
+                // Apply filters
                 if (patientId.HasValue)
                 {
                     bandsQuery = bandsQuery.Where(b => b.PatientId == patientId.Value);
-                }
-                if (bandBrandId.HasValue)
-                {
-                    bandsQuery = bandsQuery.Where(b => b.BandBrandId == bandBrandId.Value);
                 }
                 if (!string.IsNullOrWhiteSpace(image))
                 {
@@ -132,13 +128,13 @@ namespace Services.Service
                     bandsQuery = bandsQuery.Where(b => (b.DeletedTime.HasValue == !isActive.Value));
                 }
 
-                // Loại bỏ các bản ghi bị soft delete nếu không có bộ lọc DeletedTime hoặc isActive
+                // Exclude soft-deleted records if no DeletedTime or isActive filters are applied
                 if (!deletedStartDate.HasValue && !deletedEndDate.HasValue && !isActive.HasValue)
                 {
                     bandsQuery = bandsQuery.Where(b => !b.DeletedTime.HasValue);
                 }
 
-                // Áp dụng sắp xếp
+                // Apply sorting
                 if (!string.IsNullOrWhiteSpace(sortBy))
                 {
                     switch (sortBy.ToLower())
@@ -148,11 +144,11 @@ namespace Services.Service
                                 ? bandsQuery.OrderByDescending(b => b.PatientId)
                                 : bandsQuery.OrderBy(b => b.PatientId);
                             break;
-                        case "bandbrandid":
-                            bandsQuery = sortOrder.ToLower() == "desc"
-                                ? bandsQuery.OrderByDescending(b => b.BandBrandId)
-                                : bandsQuery.OrderBy(b => b.BandBrandId);
-                            break;
+                        //case "bandbrandid":
+                        //    bandsQuery = sortOrder.ToLower() == "desc"
+                        //        ? bandsQuery.OrderByDescending(b => b.BandBrandId)
+                        //        : bandsQuery.OrderBy(b => b.BandBrandId);
+                        //    break;
                         case "createdtime":
                             bandsQuery = sortOrder.ToLower() == "desc"
                                 ? bandsQuery.OrderByDescending(b => b.CreatedTime)
@@ -179,20 +175,18 @@ namespace Services.Service
                                 : bandsQuery.OrderBy(b => b.BandCode);
                             break;
                         default:
-                            bandsQuery = bandsQuery.OrderByDescending(b => b.CreatedTime); // Mặc định
+                            bandsQuery = bandsQuery.OrderByDescending(b => b.CreatedTime); // Default
                             break;
                     }
                 }
                 else
                 {
-                    bandsQuery = bandsQuery.OrderByDescending(b => b.CreatedTime); // Mặc định
+                    bandsQuery = bandsQuery.OrderByDescending(b => b.CreatedTime); // Default
                 }
 
                 int totalCount = await bandsQuery.CountAsync();
 
                 var bands = await bandsQuery
-                    //.Include(b => b.Patient)
-                    //.Include(b => b.BandBrand)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
@@ -205,6 +199,7 @@ namespace Services.Service
                 throw;
             }
         }
+
         public async Task<Band> GetBandById(int id)
         {
             try
@@ -214,8 +209,6 @@ namespace Services.Service
                 var band = await _unitOfWork.GetRepository<Band>()
                     .Entities
                     .Where(b => b.Id == id && !b.DeletedTime.HasValue)
-                    //.Include(b => b.Patient)
-                    //.Include(b => b.BandBrand)
                     .FirstOrDefaultAsync();
 
                 if (band == null)
@@ -255,15 +248,15 @@ namespace Services.Service
                 band.PatientId = model.PatientId.Value;
             }
 
-            if (model.BandBrandId.HasValue)
-            {
-                var bandBrandExists = await _unitOfWork.GetRepository<BandBrand>().Entities.AnyAsync(b => b.Id == model.BandBrandId.Value && !b.DeletedTime.HasValue);
-                if (!bandBrandExists)
-                {
-                    throw new KeyNotFoundException($"BandBrand with ID {model.BandBrandId.Value} not found.");
-                }
-                band.BandBrandId = model.BandBrandId.Value;
-            }
+            //if (model.BandBrandId.HasValue)
+            //{
+            //    var bandBrandExists = await _unitOfWork.GetRepository<BandBrand>().Entities.AnyAsync(b => b.Id == model.BandBrandId.Value && !b.DeletedTime.HasValue);
+            //    if (!bandBrandExists)
+            //    {
+            //        throw new KeyNotFoundException($"BandBrand with ID {model.BandBrandId.Value} not found.");
+            //    }
+            //    band.BandBrandId = model.BandBrandId.Value;
+            //}
 
             if (!string.IsNullOrWhiteSpace(model.Image))
             {
@@ -294,6 +287,7 @@ namespace Services.Service
             await _unitOfWork.SaveAsync();
             return true;
         }
+
 
     }
 }
