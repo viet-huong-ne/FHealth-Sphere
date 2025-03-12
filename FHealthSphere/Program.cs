@@ -20,6 +20,8 @@ using System.Text;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,7 +95,7 @@ builder.Services.AddAuthentication(options =>
 
     .AddGoogle(options =>
     {
-        options.ClientId = "295397235364-20u43d17lluu93lo4a4kfuft2f62np07.apps.googleusercontent.com";
+        options.ClientId = "399753788558-gc5vni3o56hb1ph6g9gagru99gvbn4lq.apps.googleusercontent.com";
         options.ClientSecret = "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";
     });
 
@@ -133,46 +135,21 @@ builder.Services.AddSwaggerGen(c =>
             new string[] {}
         }
     });
-    //c.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
-    //{
-    //    Type = SecuritySchemeType.OAuth2,
-    //    Flows = new OpenApiOAuthFlows
-    //    {
-    //        AuthorizationCode = new OpenApiOAuthFlow
-    //        {
-    //            AuthorizationUrl = new Uri("https://accounts.google.com/o/oauth2/auth"),
-    //            TokenUrl = new Uri("https://oauth2.googleapis.com/token"),
-    //            Scopes = new Dictionary<string, string>
-    //            {
-    //                { "openid", "OpenID Connect" },
-    //                { "profile", "Access Profile" },
-    //                { "email", "Access Email" }
-    //            }
-    //        }
-    //    }
-    //});
 
-    //c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    //{
-    //    {
-    //        new OpenApiSecurityScheme
-    //        {
-    //            Reference = new OpenApiReference
-    //            {
-    //                Type = ReferenceType.SecurityScheme,
-    //                Id = "OAuth2"
-    //            }
-    //        },
-    //        new List<string>()
-    //    }
-    //});
 });
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
         builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
+
 builder.Services.AddHttpClient();
+var firebaseCredentialPath = Path.Combine(AppContext.BaseDirectory, "serviceAccountKey.json");
+// Khởi tạo Firebase
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile(firebaseCredentialPath)
+});
 var app = builder.Build();
 
 // Middleware pipeline

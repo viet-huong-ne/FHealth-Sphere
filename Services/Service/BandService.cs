@@ -44,13 +44,13 @@ namespace Services.Service
             {
                 throw new KeyNotFoundException($"BandBrand with ID {model.BandBrandId} not found.");
             }
-
+            var bandbrand = await _unitOfWork.GetRepository<BandBrand>().GetByIdAsync(model.BandBrandId);
             var band = new Band
             {
                 PatientId = model.PatientId,
                 Image = model.Image.Trim(),
                 BandCode = model.BandCode?.Trim(),
-                //BandBrandId = model.BandBrandId,
+                BandBrand = bandbrand,
                 CreatedBy = "System",
                 CreatedTime = DateTimeOffset.Now,
                 LastUpdatedTime = DateTimeOffset.Now

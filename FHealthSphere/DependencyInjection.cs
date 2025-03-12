@@ -53,7 +53,7 @@ namespace FHealthSphere
          .AddScoped<IMetricGroupService, MetricGroupService>()
          .AddScoped<IMetricService, MetricService>()
          .AddScoped<IRecordMetricItemService, RecordMetricItemService>()
-         //.AddScoped(IAccountService, AccountService)
+         .AddScoped<IAccountService, AccountService>()
          .AddScoped<IBandService, BandService>();
 
         }

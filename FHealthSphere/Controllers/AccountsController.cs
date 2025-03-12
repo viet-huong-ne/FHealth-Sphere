@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace FHealthSphere.Controllers
 {
-    //[Route("api/[controller]")]
-    //[ApiController]
+    [Route("api/[controller]")]
+    [ApiController]
     [Authorize] // Thêm authorization nếu cần
     public class AccountsController : ControllerBase
     {
