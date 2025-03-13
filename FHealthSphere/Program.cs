@@ -20,6 +20,13 @@ using System.Text;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile("Config/serviceAccountKey.json")
+});
 
 var builder = WebApplication.CreateBuilder(args);
 

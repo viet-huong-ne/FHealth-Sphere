@@ -7,10 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Contract.Repositories.Interface;
 using Contract.Services.Interface;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using System.Text;
-using Microsoft.Extensions.Configuration;
-
+using FirebaseAdmin.Messaging;
 
 namespace Services.Service
 {
@@ -18,18 +15,12 @@ namespace Services.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<MetricService> _logger;
-        private readonly HttpClient _httpClient;
-        private readonly string _notificationApiUrl;
-        private readonly string _bearerToken;
-        private readonly string _token = "cmGkuPYJSv6MNtfg4-od6_:APA91bEfb0yCJMC8nu_v_oHGEPW1e-Enc5QbHGZYm-u_OHUg_6-Y6uFuqRMgd3zgzD8B4vCUFqwFCUYcK4ow7vZZeLNomZDiv-6zspYDQ-zKLJrzOVeahrY";
+        private readonly string _token = "cvhH8vD_QOG0hyWeeSaFk5:APA91bFFwIYSRZERY69gduIopDPOo0PnDN_oedw7ETD1ediuohSSTedLvar7J7lETxgeKKhTU3WXhp4h4v8dZlO5D-uQf0NHcGl88zR-tg8cOMxTLVudnCQ";
 
-        public MetricService(IUnitOfWork unitOfWork, ILogger<MetricService> logger, IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public MetricService(IUnitOfWork unitOfWork, ILogger<MetricService> logger)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _httpClient = httpClientFactory.CreateClient() ?? throw new ArgumentNullException(nameof(httpClientFactory));
-            _notificationApiUrl = configuration["NotificationSettings:ApiUrl"] ?? throw new ArgumentNullException(nameof(configuration), "NotificationSettings:ApiUrl is missing.");
-            _bearerToken = configuration["NotificationSettings:BearerToken"] ?? throw new ArgumentNullException(nameof(configuration), "NotificationSettings:BearerToken is missing.");
         }
 
         public async Task<Metric> CreateMetric(CreateMetricModel model)
@@ -75,6 +66,17 @@ namespace Services.Service
 
             await _unitOfWork.GetRepository<Metric>().InsertAsync(metric);
             await _unitOfWork.SaveAsync();
+
+            // Check if the default value is out of range and send notification
+            if (metric.DefaultValue > metric.MaxValue || metric.DefaultValue < metric.MinValue)
+            {
+                await SendNotificationAsync(
+                    "Metric Value Alert",
+                    $"Default value {metric.DefaultValue} is out of range for metric {metric.Name}.",
+                    _token
+                );
+            }
+
             return metric;
         }
 
@@ -319,9 +321,15 @@ namespace Services.Service
             {
                 metric.DefaultValue = model.DefaultValue.Value;
 
-                // Gọi API và nhận kết quả
-                string notificationResult = await SendNotificationIfThresholdExceeded(metric, model.DefaultValue.Value, _token);
-                _logger.LogInformation("Notification result for Metric ID {Id}: {Result}", metric.Id, notificationResult);
+                // Check if the default value is out of range and send notification
+                if (metric.DefaultValue > metric.MaxValue || metric.DefaultValue < metric.MinValue)
+                {
+                    await SendNotificationAsync(
+                        "Metric Value Alert",
+                        $"Default value {metric.DefaultValue} is out of range for metric {metric.Name}.",
+                        _token
+                    );
+                }
             }
 
             metric.LastUpdatedTime = DateTimeOffset.Now;
@@ -351,80 +359,20 @@ namespace Services.Service
             return true;
         }
 
-        private async Task<string> SendNotificationIfThresholdExceeded(Metric metric, decimal currentValue, string deviceToken)
+        private async Task SendNotificationAsync(string title, string body, string token)
         {
-            try
+            var message = new Message()
             {
-                bool isThresholdExceeded = false;
-                string message = string.Empty;
-
-                // Kiểm tra ngưỡng
-                if (metric.MinValue.HasValue && currentValue < metric.MinValue.Value)
+                Notification = new Notification()
                 {
-                    isThresholdExceeded = true;
-                    message = $"Metric {metric.Name} value ({currentValue}) is below the minimum threshold ({metric.MinValue.Value}).";
-                }
-                else if (metric.MaxValue.HasValue && currentValue > metric.MaxValue.Value)
-                {
-                    isThresholdExceeded = true;
-                    message = $"Metric {metric.Name} value ({currentValue}) is above the maximum threshold ({metric.MaxValue.Value}).";
-                }
+                    Title = title,
+                    Body = body
+                },
+                Token = token
+            };
 
-                if (isThresholdExceeded)
-                {
-                    _logger.LogWarning("Threshold exceeded for Metric ID: {Id}. Sending notification.", metric.Id);
-
-                    // Chuẩn bị payload
-                    var notificationPayload = new
-                    {
-                        message = new
-                        {
-                            token = deviceToken,
-                            notification = new
-                            {
-                                body = message,
-                                title = "FCM Message"
-                            }
-                        }
-                    };
-
-                    var jsonPayload = JsonSerializer.Serialize(notificationPayload);
-                    var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-                    // Thêm Bearer Token vào header
-                    _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _bearerToken);
-
-                    // Gửi yêu cầu đến API
-                    var response = await _httpClient.PostAsync(_notificationApiUrl, content);
-
-                    // Đọc phản hồi từ API
-                    string responseContent = await response.Content.ReadAsStringAsync();
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        _logger.LogInformation("Notification sent successfully for Metric ID: {Id}. Response: {Response}", metric.Id, responseContent);
-                        return $"Success: {responseContent}";
-                    }
-                    else
-                    {
-                        _logger.LogError("Failed to send notification for Metric ID: {Id}. Status: {StatusCode}, Response: {Response}",
-                            metric.Id, response.StatusCode, responseContent);
-                        return $"Failed: Status {response.StatusCode} - {responseContent}";
-                    }
-                }
-
-                return "No threshold exceeded, no notification sent.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error sending notification for Metric ID: {Id}.", metric.Id);
-                return $"Error: {ex.Message}";
-            }
-        }
-
-        Task<Metric> IMetricService.UpdateMetric(int id, UpdateMetricModel model)
-        {
-            throw new NotImplementedException();
+            string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+            _logger.LogInformation("Successfully sent message: " + response);
         }
     }
 }
