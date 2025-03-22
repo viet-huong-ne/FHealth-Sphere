@@ -29,7 +29,7 @@ namespace FHealthSphere.Controllers
     [FromQuery] string image = null,
     [FromQuery] string bandCode = null,
     [FromQuery] string sortBy = null,
-    [FromQuery] string sortOrder = "asc",
+    [FromQuery] string sortOrder = "desc",
     [FromQuery] DateTime? createdStartDate = null,
     [FromQuery] DateTime? createdEndDate = null,
     [FromQuery] DateTime? updatedStartDate = null,

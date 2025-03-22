@@ -27,7 +27,7 @@ namespace FHealthSphere.Controllers
     [FromQuery] int pageSize = 10,
     [FromQuery] string name = null,
     [FromQuery] string sortBy = null,
-    [FromQuery] string sortOrder = "asc",
+    [FromQuery] string sortOrder = "desc",
     [FromQuery] DateTime? createdStartDate = null,
     [FromQuery] DateTime? createdEndDate = null,
     [FromQuery] DateTime? updatedStartDate = null,

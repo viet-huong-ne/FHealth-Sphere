@@ -15,12 +15,14 @@ namespace Services.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<MetricService> _logger;
+        private readonly INotificationService _notificationService;
         private readonly string _token = "cvhH8vD_QOG0hyWeeSaFk5:APA91bFFwIYSRZERY69gduIopDPOo0PnDN_oedw7ETD1ediuohSSTedLvar7J7lETxgeKKhTU3WXhp4h4v8dZlO5D-uQf0NHcGl88zR-tg8cOMxTLVudnCQ";
 
-        public MetricService(IUnitOfWork unitOfWork, ILogger<MetricService> logger)
+        public MetricService(IUnitOfWork unitOfWork, ILogger<MetricService> logger, INotificationService notificationService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         }
 
         public async Task<Metric> CreateMetric(CreateMetricModel model)
@@ -70,11 +72,10 @@ namespace Services.Service
             // Check if the default value is out of range and send notification
             if (metric.DefaultValue > metric.MaxValue || metric.DefaultValue < metric.MinValue)
             {
-                await SendNotificationAsync(
-                    "Metric Value Alert",
-                    $"Default value {metric.DefaultValue} is out of range for metric {metric.Name}.",
-                    _token
-                );
+                var title = "Metric Value Alert";
+                var message = $"Default value {metric.DefaultValue} is out of range for metric {metric.Name}.";
+                await SendNotificationAsync(title, message, _token);
+                await _notificationService.CreateNotification(title, message, metric.MetricGroupId.Value);
             }
 
             return metric;
@@ -87,7 +88,7 @@ namespace Services.Service
             string unit = null,
             int? metricGroupId = null,
             string sortBy = null,
-            string sortOrder = "asc",
+            string sortOrder = "desc",
             DateTime? createdStartDate = null,
             DateTime? createdEndDate = null,
             DateTime? updatedStartDate = null,
@@ -324,11 +325,10 @@ namespace Services.Service
                 // Check if the default value is out of range and send notification
                 if (metric.DefaultValue > metric.MaxValue || metric.DefaultValue < metric.MinValue)
                 {
-                    await SendNotificationAsync(
-                        "Metric Value Alert",
-                        $"Default value {metric.DefaultValue} is out of range for metric {metric.Name}.",
-                        _token
-                    );
+                    var title = "Metric Value Alert";
+                    var message = $"Default value {metric.DefaultValue} is out of range for metric {metric.Name}.";
+                    await SendNotificationAsync(title, message, _token);
+                    await _notificationService.CreateNotification(title, message, metric.MetricGroupId.Value);
                 }
             }
 
