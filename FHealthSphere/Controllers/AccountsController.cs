@@ -47,7 +47,7 @@ namespace FHealthSphere.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while retrieving Accounts: {ex.Message}");
+                return StatusCode(500, $"ID:{Id} not found");
             }
         }
         // POST: api/Accounts

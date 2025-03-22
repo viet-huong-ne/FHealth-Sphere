@@ -97,12 +97,16 @@ namespace Services.Service
                     });
                 }
                 var info = account.PatientInformation;
-                var PatientInfo = new PatientInfoResponse
+                var PatientInfo = new PatientInfoResponse();
+                if (info != null)
+                {
+                    PatientInfo = new PatientInfoResponse
                 {
                     DateOfBirth = info.First().DateOfBirth,
                     Gender = info.First().Gender,
 
                 };
+                }
                 var AccountModel = new AccountModelResponse
                 {
                     Id = account.Id,

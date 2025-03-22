@@ -28,12 +28,12 @@ namespace Services.Service
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<HealthRecordService> _logger; 
         private readonly Timer _timer;
-        private string lastKey = "-OLtOFFi7AvzNmuNVWTU";
+        private string lastKey = "";
         private string _token = "c1-W--n_TAePzX4SuQkxJA:APA91bHyDm2Capx_y8WNdAJ7yuPFTD9IuqzFsqLvxeKPEd0sqwcVltz8PgI-VXPZHtOqduWZ6zRYfkIwvLTWd890RluDYTeYwWPKa6TL8pRklzAYuzhCwDw";
         public FirebasePollingService(IServiceScopeFactory scopeFactory, ILogger<HealthRecordService> logger)
         {
             _firebaseClient = new FirebaseClient("https://fhealth-sphere---login-default-rtdb.asia-southeast1.firebasedatabase.app/");
-            _timer = new Timer(async _ => await ToolFireBase(), null, TimeSpan.Zero, TimeSpan.FromMinutes(3)); // Quét mỗi 5 p
+            _timer = new Timer(async _ => await ToolFireBase(), null, TimeSpan.Zero, TimeSpan.FromMinutes(240)); // Quét mỗi 5 p
             _scopeFactory = scopeFactory;
             _logger = logger;
         }
@@ -57,15 +57,6 @@ namespace Services.Service
                 }
                 else
                 {
-                    //// Lấy dữ liệu từ Firebase bắt đầu từ lastKey
-                    //var data1 = await _firebaseClient
-                    //    .Child("healthRecords")
-                    //    .OrderByKey()
-                    //    .StartAt(lastKey) // Lấy từ lastKey trở đi
-                    //    .OnceAsync<CreateHealthRecordCombinedModel>();
-
-                    //// Bỏ qua phần tử đầu tiên (vì đó là lastKey của lần trước)
-                    //var newData = data1.Skip(1).ToList();
                     // Lọc ra các phần tử mới dựa trên lastKey
                     var newData = data
                         .SkipWhile(x => x.Key != lastKey) // Bỏ qua các phần tử cũ
@@ -128,7 +119,7 @@ namespace Services.Service
                                 systolicAverage += metric.Value;
                                 systolicCount++;
                             }
-                            else if (metric.MetricId == 4) // Tâm truong
+                            else if (metric.MetricId == 2) // Tâm truong
                             {
                                 diastolic = metric.Value;
                                 diastolicAverage += metric.Value;
@@ -161,7 +152,7 @@ namespace Services.Service
                         RecordMetricItems = new List<CreateRecordMetricItemModel>
                         {
                             new CreateRecordMetricItemModel { MetricId = 1, Value = diastolicAverage }, // Tâm trương
-                            new CreateRecordMetricItemModel { MetricId = 4, Value = systolicAverage }  // Tâm thu
+                            new CreateRecordMetricItemModel { MetricId = 2, Value = systolicAverage }  // Tâm thu
                         }
                     };
                     await ProcessDataAsync(healthRecord); // Save into DB
@@ -277,7 +268,15 @@ namespace Services.Service
                 var title = "Metric Value Alert";
                 var message = $"Default value {result.CurrentValue} is out of range for metric {result.MetricName}.";
                 await _metricService.SendNotificationAsync(title, message, _token);
-                //await _notiService.CreateNotification(title, message, patientId);
+                await _notiService.CreateNotification(title, message, patientId);
+            }
+        }
+        public async Task GetMetricId(string metricName)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                var metric = unitOfWork.GetRepository<Metric>().Entities.Where(n => n.Name.Equals(metricName));
             }
         }
     }
