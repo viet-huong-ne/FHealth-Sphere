@@ -19,7 +19,7 @@ public class NotificationService : INotificationService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<NotificationSystem> CreateNotification(string title, string message, int accountId)
+    public async Task<NotificationSystem> CreateNotification(string title, string message, int? accountId)
     {
         var notification = new NotificationSystem
         {

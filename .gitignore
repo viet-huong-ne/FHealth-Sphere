@@ -363,4 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # FireBase Setting
-serviceAccountKey.json
+FHealthSphere/Config/serviceAccountKey.json

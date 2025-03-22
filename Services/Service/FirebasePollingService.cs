@@ -1,11 +1,14 @@
 ﻿using Contract.Repositories.Entity;
 using Contract.Repositories.Interface;
+using Contract.Services.Interface;
 using FHealthSphere.Services.Services;
 using Firebase.Database;
 using Firebase.Database.Query;
 using Google.Apis.Util;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using ModelViews.HealthRecordModelViews;
 using ModelViews.MetricModelViews;
@@ -23,9 +26,10 @@ namespace Services.Service
     {
         private readonly FirebaseClient _firebaseClient;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger<HealthRecordService> _logger;
+        private readonly ILogger<HealthRecordService> _logger; 
         private readonly Timer _timer;
         private string lastKey = "-OLtOFFi7AvzNmuNVWTU";
+        private string _token = "c1-W--n_TAePzX4SuQkxJA:APA91bHyDm2Capx_y8WNdAJ7yuPFTD9IuqzFsqLvxeKPEd0sqwcVltz8PgI-VXPZHtOqduWZ6zRYfkIwvLTWd890RluDYTeYwWPKa6TL8pRklzAYuzhCwDw";
         public FirebasePollingService(IServiceScopeFactory scopeFactory, ILogger<HealthRecordService> logger)
         {
             _firebaseClient = new FirebaseClient("https://fhealth-sphere---login-default-rtdb.asia-southeast1.firebasedatabase.app/");
@@ -140,6 +144,7 @@ namespace Services.Service
                                 Console.WriteLine("User ID: " + record.PatientId + " " + record.BandId + " " + result.CurrentValue);
                                 Console.WriteLine(result.MetricName);
                                 Console.WriteLine("Note" + record.GhiChu);
+                                await CallNotification(result, record.PatientId, _token);
                             }
                         }
                     }
@@ -262,6 +267,18 @@ namespace Services.Service
                 }
             }
         }
+        public async Task CallNotification(CheckResult result, int? patientId, string FCMToken)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var _metricService = scope.ServiceProvider.GetRequiredService<IMetricService>();
+                var _notiService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
+                var title = "Metric Value Alert";
+                var message = $"Default value {result.CurrentValue} is out of range for metric {result.MetricName}.";
+                await _metricService.SendNotificationAsync(title, message, _token);
+                //await _notiService.CreateNotification(title, message, patientId);
+            }
+        }
     }
 }

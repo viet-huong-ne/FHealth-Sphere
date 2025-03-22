@@ -152,12 +152,6 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHttpClient();
-var firebaseCredentialPath = Path.Combine(AppContext.BaseDirectory, "serviceAccountKey.json");
-// Khởi tạo Firebase
-FirebaseApp.Create(new AppOptions()
-{
-    Credential = GoogleCredential.FromFile(firebaseCredentialPath)
-});
 builder.Services.AddSingleton<FirebasePollingService>();
 var app = builder.Build();
 app.Services.GetRequiredService<FirebasePollingService>();
