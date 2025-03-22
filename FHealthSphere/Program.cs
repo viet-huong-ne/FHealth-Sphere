@@ -24,6 +24,12 @@ using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Services.Service;
 
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile("Config/serviceAccountKey.json")
+});
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JsonOptions>(options =>

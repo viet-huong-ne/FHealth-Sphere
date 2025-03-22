@@ -10,7 +10,6 @@ namespace FHealthSphere.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
     public class MetricsController : ControllerBase
     {
         private readonly IMetricService _metricService;
@@ -22,23 +21,23 @@ namespace FHealthSphere.Controllers
 
         [HttpGet]
         public async Task<ActionResult<BasePaginatedList<Metric>>> GetAllMetrics(
-    [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 10,
-    [FromQuery] string name = null,
-    [FromQuery] string unit = null,
-    [FromQuery] int? metricGroupId = null,
-    [FromQuery] string sortBy = null,
-    [FromQuery] string sortOrder = "asc",
-    [FromQuery] DateTime? createdStartDate = null,
-    [FromQuery] DateTime? createdEndDate = null,
-    [FromQuery] DateTime? updatedStartDate = null,
-    [FromQuery] DateTime? updatedEndDate = null,
-    [FromQuery] DateTime? deletedStartDate = null,
-    [FromQuery] DateTime? deletedEndDate = null,
-    [FromQuery] string createdBy = null,
-    [FromQuery] string updatedBy = null,
-    [FromQuery] string deletedBy = null,
-    [FromQuery] bool? isActive = null)
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string name = null,
+            [FromQuery] string unit = null,
+            [FromQuery] int? metricGroupId = null,
+            [FromQuery] string sortBy = null,
+            [FromQuery] string sortOrder = "desc",
+            [FromQuery] DateTime? createdStartDate = null,
+            [FromQuery] DateTime? createdEndDate = null,
+            [FromQuery] DateTime? updatedStartDate = null,
+            [FromQuery] DateTime? updatedEndDate = null,
+            [FromQuery] DateTime? deletedStartDate = null,
+            [FromQuery] DateTime? deletedEndDate = null,
+            [FromQuery] string createdBy = null,
+            [FromQuery] string updatedBy = null,
+            [FromQuery] string deletedBy = null,
+            [FromQuery] bool? isActive = null)
         {
             try
             {
@@ -90,7 +89,8 @@ namespace FHealthSphere.Controllers
                 return StatusCode(500, $"An error occurred while retrieving Metrics: {ex.Message}");
             }
         }
-        [HttpGet("{id}")] // Thêm phương thức Get by Id
+
+        [HttpGet("{id}")]
         public async Task<ActionResult<Metric>> GetMetricById(int id)
         {
             try
@@ -108,7 +108,6 @@ namespace FHealthSphere.Controllers
             }
         }
 
-        // POST: api/Metrics
         [HttpPost]
         public async Task<ActionResult<Metric>> CreateMetric([FromBody] CreateMetricModel model)
         {
@@ -140,7 +139,6 @@ namespace FHealthSphere.Controllers
             }
         }
 
-        // PUT: api/Metrics/{id}
         [HttpPut("{id}")]
         public async Task<ActionResult<Metric>> UpdateMetric(int id, [FromBody] UpdateMetricModel model)
         {
@@ -172,7 +170,6 @@ namespace FHealthSphere.Controllers
             }
         }
 
-        // DELETE: api/Metrics/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMetric(int id)
         {
@@ -190,6 +187,5 @@ namespace FHealthSphere.Controllers
                 return StatusCode(500, $"Failed to delete Metric with ID {id}: {ex.Message}");
             }
         }
-
     }
 }
