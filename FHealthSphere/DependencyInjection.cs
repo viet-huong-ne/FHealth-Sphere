@@ -48,6 +48,7 @@ namespace FHealthSphere
             services
                 .AddScoped<IUserService, UserService>()
                 .AddScoped<TokenService>()
+                .AddScoped<FirebaseService>()
          .AddScoped<IBandBrandService, BandBrandService>()
          .AddScoped<IHealthRecordService, HealthRecordService>()
          .AddScoped<IMetricGroupService, MetricGroupService>()

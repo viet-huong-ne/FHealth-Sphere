@@ -2,15 +2,18 @@
 using Contract.Services.Interface;
 using Core.Base;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.AccountModelViews;
+using ModelViews.AccountModelViews.Request;
+using ModelViews.AccountModelViews.Response;
 using System.Threading.Tasks;
 
 namespace FHealthSphere.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Thêm authorization nếu cần
+    //[Authorize] // Thêm authorization nếu cần
     public class AccountsController : ControllerBase
     {
         private readonly IAccountService _accountService;
@@ -22,19 +25,31 @@ namespace FHealthSphere.Controllers
 
         // GET: api/Accounts?pageNumber=1&pageSize=10
         [HttpGet]
-        public async Task<ActionResult<BasePaginatedList<Account>>> GetAllAccounts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<ActionResult<BasePaginatedList<AccountModelResponse>>> GetAllAccounts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
                 var accounts = await _accountService.GetAllAccounts(pageNumber, pageSize);
-                return Ok(BaseResponse<BasePaginatedList<Account>>.OkResponse(accounts));
+                return Ok(BaseResponse<BasePaginatedList<AccountModelResponse>>.OkResponse(accounts));
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"An error occurred while retrieving Accounts: {ex.Message}");
             }
         }
-
+        [HttpGet("{Id}")]
+        public async Task<ActionResult<AccountModelResponse>> GetUserById(int Id)
+        {
+            try
+            {
+                var accounts = await _accountService.GetAccountById(Id);
+                return Ok(accounts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while retrieving Accounts: {ex.Message}");
+            }
+        }
         // POST: api/Accounts
         [HttpPost]
         public async Task<ActionResult<Account>> CreateAccount([FromBody] CreateAccountModel model)
@@ -66,7 +81,36 @@ namespace FHealthSphere.Controllers
                 return StatusCode(500, $"Failed to create Account: {ex.Message}");
             }
         }
+        [HttpPost("Watcher")]
+        public async Task<ActionResult<Account>> AddWatcher([FromBody] CreateWatcher model)
+        {
+            try
+            {
+                if (model == null)
+                {
+                    return BadRequest("Request body is required.");
+                }
 
+                 await _accountService.CreateWatcher(model);
+                return Ok();
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Failed to create Account: {ex.Message}");
+            }
+        }
         // PUT: api/Accounts/{id}
         [HttpPut("{id}")]
         public async Task<ActionResult<Account>> UpdateAccount(int id, [FromBody] UpdateAccountModel model)

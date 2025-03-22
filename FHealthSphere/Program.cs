@@ -22,6 +22,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using Services.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,7 @@ builder.Services.AddControllers()
         //options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         //options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
     });
 builder.Services.AddLogging();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -150,8 +152,9 @@ FirebaseApp.Create(new AppOptions()
 {
     Credential = GoogleCredential.FromFile(firebaseCredentialPath)
 });
+builder.Services.AddSingleton<FirebasePollingService>();
 var app = builder.Build();
-
+app.Services.GetRequiredService<FirebasePollingService>();
 // Middleware pipeline
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {

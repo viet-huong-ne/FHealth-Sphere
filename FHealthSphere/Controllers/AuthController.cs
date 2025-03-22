@@ -30,47 +30,47 @@ namespace FHealthSphere.Controllers
             _logger = logger;
         }
 
-        [HttpPost("login")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GoogleSignIn([FromBody] string request)
-        {
-            Account acc = new Account();
-            try
-            {
-                var payload = await GoogleJsonWebSignature.ValidateAsync(request);
+        //[HttpPost("login")]
+        //[AllowAnonymous]
+        //public async Task<IActionResult> GoogleSignIn([FromBody] string request)
+        //{
+        //    Account acc = new Account();
+        //    try
+        //    {
+        //        var payload = await GoogleJsonWebSignature.ValidateAsync(request);
 
-                if (payload == null)
-                    return BadRequest("Invalid Google token");
-                Console.WriteLine(payload.Email);
-                var user = await _userService.GetUserByEmail(payload.Email);
-                //check user don't exist create user
-                if (user == null)
-                {
+        //        if (payload == null)
+        //            return BadRequest("Invalid Google token");
+        //        Console.WriteLine(payload.Email);
+        //        var user = await _userService.GetUserByEmail(payload.Email);
+        //        //check user don't exist create user
+        //        if (user == null)
+        //        {
                     
-                    user = new Account
-                    {
-                        UserName = payload.Email.Split("@")[0],
-                        Email = payload.Email,
-                        FullName = payload.Name,
-                        CreatedBy = payload.Name,
-                        CreatedTime = DateTime.UtcNow,
-                        LastUpdatedBy = payload.Name,
-                        LastUpdatedTime = DateTime.UtcNow
+        //            user = new Account
+        //            {
+        //                UserName = payload.Email.Split("@")[0],
+        //                Email = payload.Email,
+        //                FullName = payload.Name,
+        //                CreatedBy = payload.Name,
+        //                CreatedTime = DateTime.UtcNow,
+        //                LastUpdatedBy = payload.Name,
+        //                LastUpdatedTime = DateTime.UtcNow
                         
-                    };
+        //            };
 
-                    user = await _userService.CreateAccountAsync(user);
-                    var role = await _userService.AddRoleToAccountAsync(user.Id, "Patient"); 
-                }
-                Console.WriteLine("User ID" + user.Id.ToString());
-                var jwtToken = _tokenService.GenerateJwtTokenAsync(user);
-                return Ok(new { token = jwtToken, user });
-            }
-            catch
-            {
-                return BadRequest("Google authentication failed");
-            }
-        }
+        //            user = await _userService.CreateAccountAsync(user);
+        //            var role = await _userService.AddRoleToAccountAsync(user.Id, "Patient"); 
+        //        }
+        //        Console.WriteLine("User ID" + user.Id.ToString());
+        //        var jwtToken = _tokenService.GenerateJwtTokenAsync(user);
+        //        return Ok(new { token = jwtToken, user });
+        //    }
+        //    catch
+        //    {
+        //        return BadRequest("Google authentication failed");
+        //    }
+        //}
         [HttpPost("firebase-login")]
         public async Task<IActionResult> GoogleLogin([FromBody] string request)
         {
@@ -93,6 +93,7 @@ namespace FHealthSphere.Controllers
                         LastUpdatedBy = fullName,
                         };
                     var result = await _userManager.CreateAsync(user);
+                    await _userService.AddRoleToAccountAsync(user.Id, "Patient");
                     if (!result.Succeeded)
                     {
                         return BadRequest(result.Errors);
@@ -103,7 +104,7 @@ namespace FHealthSphere.Controllers
                 var token = await _tokenService.GenerateJwtTokenAsync(user);
                 var role = await _userManager.GetRolesAsync(user);
 
-                return Ok(new { Message = "Login successful", Token = token, Email = email, Role = role.First() });
+                return Ok(new { Message = "Login successful", Token = token, Email = email, UserId = user.Id, Name = user.FullName, Role = role});
             }
             catch
             {
@@ -149,7 +150,7 @@ namespace FHealthSphere.Controllers
 
             return Unauthorized(new { IsValid = false, Message = "Invalid token" });
         }
-        [Authorize]
+        //[Authorize]
         [HttpPost("user-role")]
         public async Task<IActionResult> AddRoleToUser([FromBody] AddRoleModel model)
         {
