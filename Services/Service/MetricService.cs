@@ -75,7 +75,7 @@ namespace Services.Service
                 var title = "Metric Value Alert";
                 var message = $"Default value {metric.DefaultValue} is out of range for metric {metric.Name}.";
                 await SendNotificationAsync(title, message, _token);
-                await _notificationService.CreateNotification(title, message, metric.MetricGroupId.Value);
+                //await _notificationService.CreateNotification(title, message, metric.MetricGroupId.Value);
             }
 
             return metric;
@@ -328,7 +328,7 @@ namespace Services.Service
                     var title = "Metric Value Alert";
                     var message = $"Default value {metric.DefaultValue} is out of range for metric {metric.Name}.";
                     await SendNotificationAsync(title, message, _token);
-                    await _notificationService.CreateNotification(title, message, metric.MetricGroupId.Value);
+                    //await _notificationService.CreateNotification(title, message, metric.MetricGroupId.Value);
                 }
             }
 

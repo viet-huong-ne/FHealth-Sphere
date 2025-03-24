@@ -13,6 +13,7 @@ namespace Contract.Services.Interface
         Task<NotificationSystem> CreateNotification(string title, string message, int accountId);
         Task<IEnumerable<NotificationSystem>> GetNotifications(int accountId);
         Task MarkAsRead(int notificationId);
+        Task SendNotificationAsync(string fcmToken, string title, string body);
     }
 
 }

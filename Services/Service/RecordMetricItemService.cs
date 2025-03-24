@@ -14,11 +14,16 @@ namespace Services.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<RecordMetricItemService> _logger;
+        private readonly INotificationService _notificationService;
 
-        public RecordMetricItemService(ILogger<RecordMetricItemService> logger, IUnitOfWork unitOfWork)
+        public RecordMetricItemService(
+            ILogger<RecordMetricItemService> logger,
+            IUnitOfWork unitOfWork,
+            INotificationService notificationService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         }
 
         public async Task<RecordMetricItem> CreateRecordMetricItem(CreateRecordMetricItemModel model)
@@ -80,6 +85,8 @@ namespace Services.Service
 
                 await _unitOfWork.GetRepository<RecordMetricItem>().InsertAsync(recordMetricItem);
                 await _unitOfWork.SaveAsync();
+                // Kiểm tra và gửi thông báo nếu giá trị vượt ngưỡng
+                await CheckAndNotifyIfOutOfRange(recordMetricItem);
                 return recordMetricItem;
             }
             catch (Exception ex)
@@ -348,6 +355,8 @@ namespace Services.Service
 
                 await _unitOfWork.GetRepository<RecordMetricItem>().UpdateAsync(recordMetricItem);
                 await _unitOfWork.SaveAsync();
+                // Kiểm tra và gửi thông báo nếu giá trị vượt ngưỡng
+                await CheckAndNotifyIfOutOfRange(recordMetricItem);
                 return recordMetricItem;
             }
             catch (Exception ex)
@@ -374,6 +383,95 @@ namespace Services.Service
             await _unitOfWork.GetRepository<RecordMetricItem>().UpdateAsync(recordMetricItem);
             await _unitOfWork.SaveAsync();
             return true;
+        }
+        private async Task CheckAndNotifyIfOutOfRange(RecordMetricItem recordMetricItem)
+        {
+            try
+            {
+                // Lấy Metric để kiểm tra MinValue và MaxValue
+                var metric = await _unitOfWork.GetRepository<Metric>()
+                    .Entities
+                    .FirstOrDefaultAsync(m => m.Id == recordMetricItem.MetricId && !m.DeletedTime.HasValue);
+
+                if (metric == null)
+                {
+                    _logger.LogWarning("Metric with ID {MetricId} not found for RecordMetricItem {RecordMetricItemId}", recordMetricItem.MetricId, recordMetricItem.Id);
+                    return;
+                }
+
+                // Kiểm tra giá trị có vượt ngưỡng không
+                bool isOutOfRange = false;
+                string warningMessage = string.Empty;
+
+                if (recordMetricItem.Value.HasValue)
+                {
+                    if (metric.MinValue.HasValue && recordMetricItem.Value < metric.MinValue)
+                    {
+                        isOutOfRange = true;
+                        warningMessage = $"Warning: {metric.Name} value ({recordMetricItem.Value}) is below the minimum threshold ({metric.MinValue}).";
+                    }
+                    else if (metric.MaxValue.HasValue && recordMetricItem.Value > metric.MaxValue)
+                    {
+                        isOutOfRange = true;
+                        warningMessage = $"Warning: {metric.Name} value ({recordMetricItem.Value}) exceeds the maximum threshold ({metric.MaxValue}).";
+                    }
+                }
+
+                if (!isOutOfRange)
+                {
+                    return; // Không cần gửi thông báo nếu giá trị trong ngưỡng
+                }
+
+                // Lấy HealthRecord để truy ngược về User
+                var healthRecord = await _unitOfWork.GetRepository<HealthRecord>()
+                    .Entities
+                    .FirstOrDefaultAsync(hr => hr.Id == recordMetricItem.HealthRecordId && !hr.DeletedTime.HasValue);
+
+                if (healthRecord == null)
+                {
+                    _logger.LogWarning("HealthRecord with ID {HealthRecordId} not found for RecordMetricItem {RecordMetricItemId}", recordMetricItem.HealthRecordId, recordMetricItem.Id);
+                    return;
+                }
+
+                // Lấy Band để truy ngược về User
+                var band = await _unitOfWork.GetRepository<Band>()
+                    .Entities
+                    .FirstOrDefaultAsync(b => b.Id == healthRecord.BandId && !b.DeletedTime.HasValue);
+
+                if (band == null)
+                {
+                    _logger.LogWarning("Band with ID {BandId} not found for HealthRecord {HealthRecordId}", healthRecord.BandId, healthRecord.Id);
+                    return;
+                }
+
+                // Lấy User để lấy FCMToken
+                var user = await _unitOfWork.GetRepository<Account>()
+                    .Entities
+                    .FirstOrDefaultAsync(u => u.Id == band.PatientId && !u.DeletedTime.HasValue);
+
+                if (user == null || string.IsNullOrWhiteSpace(user.FCMToken))
+                {
+                    _logger.LogWarning("User with ID {UserId} not found or FCMToken is empty for Band {BandId}", band.PatientId, band.Id);
+                    return;
+                }
+
+                // Gửi thông báo qua FCM
+                await _notificationService.SendNotificationAsync(
+                    user.FCMToken,
+                    "Health Metric Alert",
+                    warningMessage
+                );
+                await _notificationService.CreateNotification(
+                    "Health Metric Alert",
+                    warningMessage,
+                    user.Id
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to check and notify for RecordMetricItem {RecordMetricItemId}: {Message}", recordMetricItem.Id, ex.Message);
+                // Không throw exception để không làm gián đoạn quá trình tạo/cập nhật
+            }
         }
     }
 }

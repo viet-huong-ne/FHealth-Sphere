@@ -24,6 +24,7 @@ namespace Contract.Repositories.Entity
         public DateTimeOffset? DeletedTime { get; set; }
         public string? PhoneNumber { get; set; }
         public string? FullName { get; set; }
+        public string? FCMToken { get; set; }
         public virtual ICollection<PatientInformation> PatientInformation { get; set; }
         public virtual ICollection<HealthRecord> HealthRecords { get; set; }
         public virtual ICollection<NotificationSystem> NotificationSystems { get; set; }
