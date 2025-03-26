@@ -2,6 +2,7 @@
 using Contract.Repositories.Interface;
 using Contract.Services.Interface;
 using Core.Base;
+using Core.Store;
 using Core.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -125,45 +126,102 @@ namespace Services.Service
             return new BasePaginatedList<AccountModelResponse>(result, totalCount, pageNumber, pageSize);
         }
 
-        public async Task<Account> UpdateAccount(int id, UpdateAccountModel model)
+        public async Task<BaseResponse<string>> UpdateAccount(int id, UpdateAccountModel model)
         {
-            if (model == null || string.IsNullOrWhiteSpace(model.UserName))
+            var accountRepo = _unitOfWork.GetRepository<Account>();
+            var account = await accountRepo.Entities.Include(n => n.PatientInformation).FirstOrDefaultAsync(a => a.Id == id && !a.DeletedTime.HasValue) ??
+              throw new KeyNotFoundException($"Account with ID {id} not found or already deleted.");
+            if (account == null)
             {
-                throw new ArgumentNullException(nameof(model), "Update data is required and UserName cannot be empty or whitespace.");
+                return new BaseResponse<string>(StatusCodeHelper.Notfound, "404", "Account not found.");
             }
 
-            var accountRepo = _unitOfWork.GetRepository<Account>();
-            var account = await accountRepo.Entities.FirstOrDefaultAsync(a => a.Id == id && !a.DeletedTime.HasValue);
+            if (!string.IsNullOrEmpty(model.Role))
+            {
+                // AssignRoleToAccount(account, model.Role);
+            }
+
+            if (!string.IsNullOrEmpty(model.FullName))
+            {
+                account.FullName = model.FullName;
+            }
+
+            if (!string.IsNullOrEmpty(model.PhoneNumber))
+            {
+                account.PhoneNumber = model.PhoneNumber;
+            }
+
+            if (!string.IsNullOrEmpty(model.FCMToken))
+            {
+                account.FCMToken = model.FCMToken;
+            }
+
+            if (model.PatientInfo != null)
+            {
+                var patientInfo = account.PatientInformation.FirstOrDefault();
+                if (patientInfo != null)
+                {
+                    if (!string.IsNullOrEmpty(model.PatientInfo.Gender))
+                    {
+                        patientInfo.Gender = model.PatientInfo.Gender;
+                    }
+
+                    if (model.PatientInfo.DateOfBirth.HasValue)
+                    {
+                        patientInfo.DateOfBirth = model.PatientInfo.DateOfBirth.Value;
+                    }
+                }
+            }
+
+            account.LastUpdatedBy = "System";
+            account.LastUpdatedTime = DateTimeOffset.UtcNow;
+
+            try
+            {
+                //await _unitOfWork.GetRepository<Account>().UpdateAsync(account);
+                await _unitOfWork.SaveAsync();
+                return BaseResponse<string>.OkResponse("Account updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse<string>(StatusCodeHelper.ServerError, StatusCodeHelper.ServerError.Name(), $"Internal server error: {ex.Message}");
+            }
+        }
+        public async Task<BaseResponse<string>> AddPatientInfoAsync(int id, AddPatientInfoModel model)
+        {
+            var account = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(a => a.Id == id);
 
             if (account == null)
             {
-                throw new KeyNotFoundException($"Account with ID {id} not found or already deleted.");
+                return new BaseResponse<string>(StatusCodeHelper.Notfound, "404", "Account not found.");
             }
-
-            var existingAccount = await accountRepo.Entities
-                .FirstOrDefaultAsync(a => a.UserName.ToLower() == model.UserName.ToLower() && a.Id != id && !a.DeletedTime.HasValue);
-
-            if (existingAccount != null)
+            if (account.PatientInformation == null)
             {
-                throw new InvalidOperationException("An account with this username already exists.");
+                account.PatientInformation = new List<PatientInformation>();
             }
-
-            account.UserName = model.UserName.Trim();
-            account.PhoneNumber = model.PhoneNumber;
-            account.LastUpdatedTime = DateTimeOffset.Now;
-            account.LastUpdatedBy = "System";
-
-            if (!string.IsNullOrWhiteSpace(model.Password))
+            var patientInfo = new PatientInformation
             {
-                var passwordHasher = new PasswordHasher<Account>();
-                account.PasswordHash = passwordHasher.HashPassword(account, model.Password);
+                Gender = model.Gender,
+                DateOfBirth = model.DateOfBirth,                
+            };
+
+            account.PatientInformation.Add(patientInfo);
+
+            if (!string.IsNullOrEmpty(model.FCMToken))
+            {
+                account.FCMToken = model.FCMToken;
             }
 
-            await accountRepo.UpdateAsync(account);
-            await _unitOfWork.SaveAsync();
-            return account;
+            try
+            {
+                await _unitOfWork.SaveAsync();
+                return BaseResponse<string>.OkResponse("Patient information added successfully.");
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse<string>(StatusCodeHelper.ServerError, "500", $"Internal server error: {ex.Message}");
+            }
         }
-
         public async Task<bool> DeleteAccount(int id)
         {
             var accountRepo = _unitOfWork.GetRepository<Account>();

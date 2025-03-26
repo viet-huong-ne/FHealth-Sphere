@@ -16,7 +16,8 @@ namespace Contract.Services.Interface
         Task<Account> CreateAccount(CreateAccountModel model);
         Task CreateWatcher(CreateWatcher model);
         Task<BasePaginatedList<AccountModelResponse>> GetAllAccounts(int pageNumber, int pageSize);
-        Task<Account> UpdateAccount(int id, UpdateAccountModel model);
+        Task<BaseResponse<string>> UpdateAccount(int id, UpdateAccountModel model);
+        Task<BaseResponse<string>> AddPatientInfoAsync(int id, AddPatientInfoModel model);
         Task<bool> DeleteAccount(int id);
         Task<AccountModelResponse> GetAccountById(int Id);
     }

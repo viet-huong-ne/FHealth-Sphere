@@ -32,6 +32,7 @@ namespace Repositories.Base
         public DbSet<RecordMetricItem> RecordMetricItems { get; set; }
         public DbSet<MetricGroup> MetricGroup { get; set; }
         public DbSet<NotificationSystem> NotificationSystems { get; set; }
+        public DbSet<BloodPressureClassification> BloodPressureClassifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,7 +46,7 @@ namespace Repositories.Base
                     entityType.SetTableName(tableName.Substring(6));
                 }
             }
-            //modelBuilder.Entity<Account>().Property(a => a.).ValueGeneratedOnAdd();
+            modelBuilder.Entity<BloodPressureClassification>().Property(a => a.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Watcher>().Property(w => w.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<PatientInformation>().Property(p => p.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<NotificationSystem>().Property(n => n.Id).ValueGeneratedOnAdd();

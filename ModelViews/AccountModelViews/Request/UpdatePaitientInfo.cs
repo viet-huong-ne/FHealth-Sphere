@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ModelViews.PatientInfoModelViews.Response
+namespace ModelViews.AccountModelViews.Request
 {
-    public class PatientInfoResponse
+    public class UpdatePaitientInfo
     {
         public string? Gender { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
     }
 }

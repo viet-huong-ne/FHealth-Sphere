@@ -27,7 +27,7 @@ namespace Services.Service
         {
             string jsonData = JsonConvert.SerializeObject(record);
             var result = await _firebaseClient
-                .Child("healthRecords")
+                .Child("healthRecordsV2")
                 .PostAsync(jsonData);
 
             return result != null;

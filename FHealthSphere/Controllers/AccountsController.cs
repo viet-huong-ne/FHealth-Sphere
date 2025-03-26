@@ -51,36 +51,36 @@ namespace FHealthSphere.Controllers
             }
         }
         // POST: api/Accounts
-        [HttpPost]
-        public async Task<ActionResult<Account>> CreateAccount([FromBody] CreateAccountModel model)
-        {
-            try
-            {
-                if (model == null)
-                {
-                    return BadRequest("Request body is required.");
-                }
+        //[HttpPost]
+        //public async Task<ActionResult<Account>> CreateAccount([FromBody] CreateAccountModel model)
+        //{
+        //    try
+        //    {
+        //        if (model == null)
+        //        {
+        //            return BadRequest("Request body is required.");
+        //        }
 
-                var account = await _accountService.CreateAccount(model);
-                return Ok(BaseResponse<Account>.OkResponse(account));
-            }
-            catch (ArgumentNullException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Failed to create Account: {ex.Message}");
-            }
-        }
+        //        var account = await _accountService.CreateAccount(model);
+        //        return Ok(BaseResponse<Account>.OkResponse(account));
+        //    }
+        //    catch (ArgumentNullException ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        return Conflict(ex.Message);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Failed to create Account: {ex.Message}");
+        //    }
+        //}
         [HttpPost("Watcher")]
         public async Task<ActionResult<Account>> AddWatcher([FromBody] CreateWatcher model)
         {
@@ -113,40 +113,28 @@ namespace FHealthSphere.Controllers
         }
         // PUT: api/Accounts/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult<Account>> UpdateAccount(int id, [FromBody] UpdateAccountModel model)
+        public async Task<IActionResult> UpdateAccount(int id, [FromBody] UpdateAccountModel model)
         {
-            try
-            {
                 if (model == null)
                 {
                     return BadRequest("Request body is required.");
                 }
 
-                var account = await _accountService.UpdateAccount(id, model);
-                return Ok(BaseResponse<Account>.OkResponse(account));
-            }
-            catch (ArgumentNullException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Failed to update Account with ID {id}: {ex.Message}");
-            }
+                var result = await _accountService.UpdateAccount(id, model);
+                return StatusCode((int)result.StatusCode, result);
         }
+        [HttpPost("{id}/patient-info")]
+        public async Task<IActionResult> AddPatientInfo(int id, [FromBody] AddPatientInfoModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
+            var result = await _accountService.AddPatientInfoAsync(id, model);
+
+            return StatusCode((int)result.StatusCode, result);
+        }
         // DELETE: api/Accounts/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccount(int id)

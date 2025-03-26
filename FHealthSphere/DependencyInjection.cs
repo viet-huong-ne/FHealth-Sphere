@@ -56,7 +56,8 @@ namespace FHealthSphere
          .AddScoped<IRecordMetricItemService, RecordMetricItemService>()
          .AddScoped<IAccountService, AccountService>()
         .AddScoped<INotificationService, NotificationService>()
-         .AddScoped<IBandService, BandService>();
+         .AddScoped<IBandService, BandService>()
+         .AddScoped<IBloodPressureService, BloodPressureService>();
 
 
         }
