@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Contract.Repositories.Entity;
 using Contract.Repositories.Interface;
 using Contract.Services.Interface;
+using FirebaseAdmin.Messaging;
 
 public class NotificationService : INotificationService
 {
@@ -74,4 +75,35 @@ public class NotificationService : INotificationService
             await _unitOfWork.SaveAsync();
         }
     }
+    public async Task SendNotificationAsync(string fcmToken, string title, string body)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(fcmToken))
+            {
+                _logger.LogWarning("FCM token is empty. Cannot send notification.");
+                return;
+            }
+
+            var message = new Message
+            {
+                Token = fcmToken,
+                Notification = new Notification
+                {
+                    Title = title,
+                    Body = body
+                }
+            };
+
+            string result = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+            _logger.LogInformation("Successfully sent notification to FCM token {FCMToken}: {Result}", fcmToken, result);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send notification to FCM token {FCMToken}: {Message}", fcmToken, ex.Message);
+            throw;
+        }
+    }
+
 }
