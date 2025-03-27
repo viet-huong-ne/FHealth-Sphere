@@ -39,7 +39,7 @@ public class NotificationsController : ControllerBase // Đổi tên controller 
         public string FcmToken { get; set; }
     }
 
-    [HttpPost] 
+    [HttpPost]
     public async Task<IActionResult> CreateBulkNotifications([FromBody] BulkNotificationRequest request)
     {
         if (!ModelState.IsValid)
@@ -49,28 +49,30 @@ public class NotificationsController : ControllerBase // Đổi tên controller 
 
         try
         {
-            var tasks = new List<Task>();
+            var pushTasks = new List<Task>();
 
+            // First, handle all database operations sequentially
             foreach (var item in request.Notifications)
             {
                 // Tạo notification trong database
-                var notificationTask = _notificationService.CreateNotification(
+                await _notificationService.CreateNotification(
                     item.Title,
                     item.Message,
                     item.AccountId);
+            }
 
-                // Gửi push notification qua FCM
+            // Then, handle push notifications concurrently
+            foreach (var item in request.Notifications)
+            {
                 var pushTask = _notificationService.SendNotificationAsync(
                     item.FcmToken,
                     item.Title,
                     item.Message);
-
-                tasks.Add(notificationTask);
-                tasks.Add(pushTask);
+                pushTasks.Add(pushTask);
             }
 
-            // Chờ tất cả các tác vụ hoàn thành
-            await Task.WhenAll(tasks);
+            // Chờ tất cả các tác vụ push notification hoàn thành
+            await Task.WhenAll(pushTasks);
 
             return Ok(new
             {
