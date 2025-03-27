@@ -4,13 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-[Route("api/[controller]")]
+[Route("api/[controller]")] // Route sẽ là /api/notifications
 [ApiController]
-public class NotificationController : ControllerBase
+public class NotificationsController : ControllerBase // Đổi tên controller thành số nhiều
 {
     private readonly INotificationService _notificationService;
 
-    public NotificationController(INotificationService notificationService)
+    public NotificationsController(INotificationService notificationService)
     {
         _notificationService = notificationService;
     }
@@ -39,8 +39,8 @@ public class NotificationController : ControllerBase
         public string FcmToken { get; set; }
     }
 
-    [HttpPost("send-bulk")]
-    public async Task<IActionResult> SendBulkNotifications([FromBody] BulkNotificationRequest request)
+    [HttpPost] 
+    public async Task<IActionResult> CreateBulkNotifications([FromBody] BulkNotificationRequest request)
     {
         if (!ModelState.IsValid)
         {
