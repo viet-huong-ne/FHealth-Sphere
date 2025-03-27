@@ -7,6 +7,10 @@ using Contract.Repositories.Interface;
 using Contract.Services.Interface;
 using ModelViews.HealthRecordModelViews;
 using Microsoft.Extensions.Logging;
+using ModelViews.RecordMetricItemModelViews;
+using Microsoft.Identity.Client;
+using Core.Store;
+using Core.Utils;
 
 namespace FHealthSphere.Services.Services
 {
@@ -79,6 +83,109 @@ namespace FHealthSphere.Services.Services
             return healthRecord;
         }
 
+        public async Task<BaseResponse<DailyHealthRecordModel>> GetDailyAverage(DateTime date, int? patientId)
+        {
+            try
+            {
+                var startDate = date.Date;
+                var endDate = startDate.AddDays(1);
+
+                // Query data
+                var query = _unitOfWork.GetRepository<RecordMetricItem>()
+                    .Entities
+                    .Include(r => r.HealthRecord)
+                    .Where(r => r.CreatedTime >= startDate && r.CreatedTime < endDate);
+
+                if (patientId.HasValue)
+                {
+                    query = query.Where(r => r.HealthRecord.PatientId == patientId.Value);
+                }
+
+                var dailyMetrics = await query
+                    .GroupBy(r => r.MetricId)
+                    .Select(g => new RecordMetricItemModel
+                    {
+                        MetricId = g.Key.Value,
+                        AverageValue = g.Average(x => x.Value)
+                    })
+                    .ToListAsync();
+
+                var result = new DailyHealthRecordModel
+                {
+                    Date = startDate.ToString("yyyy-MM-dd"),
+                    PatientId = patientId,
+                    Metrics = dailyMetrics
+                };
+
+                return BaseResponse<DailyHealthRecordModel>.OkResponse(result);
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse<DailyHealthRecordModel>(StatusCodeHelper.ServerError, StatusCodeHelper.ServerError.Name(), $"Internal server error: {ex.Message}");
+            }
+        }
+
+        // Weekly Average
+        public async Task<BaseResponse<WeeklyMetricViewModel>> GetWeeklyAverage(DateTime startDate, int? patientId)
+        {
+            try
+            {
+                var startOfWeek = startDate.Date;
+                var endOfWeek = startOfWeek.AddDays(7);
+
+                var query = _unitOfWork.GetRepository<RecordMetricItem>()
+                    .Entities
+                    .Include(r => r.HealthRecord)
+                    .Where(r => r.CreatedTime >= startOfWeek && r.CreatedTime < endOfWeek);
+
+                if (patientId.HasValue)
+                {
+                    query = query.Where(r => r.HealthRecord.PatientId == patientId.Value);
+                }
+
+                var weeklyData = await query
+                    .GroupBy(r => new { r.MetricId, Date = r.CreatedTime.Date })
+                    .Select(g => new
+                    {
+                        g.Key.Date,
+                        g.Key.MetricId,
+                        AverageValue = g.Average(x => x.Value)
+                    })
+                    .OrderBy(g => g.Date)
+                    .ToListAsync();
+
+                var groupedResult = weeklyData
+                    .GroupBy(x => x.Date)
+                    .Select(day => new DailyHealthRecordModel
+                    {
+                        Date = day.Key.ToString("yyyy-MM-dd"),
+                        PatientId = patientId,
+                        Metrics = day.Select(m => new RecordMetricItemModel
+                        {
+                            MetricId = m.MetricId.Value,
+                            AverageValue = m.AverageValue
+                        }).ToList()
+                    })
+                    .ToList();
+
+                decimal? weeklyAverage = weeklyData
+                    .Where(m => m.AverageValue.HasValue)
+                    .Average(m => m.AverageValue);
+                var result = new WeeklyMetricViewModel
+                {
+                    WeekStartDate = startOfWeek.ToString("yyyy-MM-dd"),
+                    PatientId = patientId,
+                    WeeklyAverage = weeklyAverage,
+                    DailyAverages = groupedResult
+                };
+
+                return BaseResponse<WeeklyMetricViewModel>.OkResponse(result);
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse<WeeklyMetricViewModel>(StatusCodeHelper.ServerError, StatusCodeHelper.ServerError.Name(), $"Internal server error: {ex.Message}");
+            }
+        }
         public async Task<BasePaginatedList<HealthRecord>> GetAllHealthRecordsCombined(int pageNumber, int pageSize, int? patientId = null, int? bandId = null, string ghiChu = null, string sortBy = null, string sortOrder = "asc", DateTime? createdStartDate = null, DateTime? createdEndDate = null)
         {
             if (pageNumber < 1) pageNumber = 1;

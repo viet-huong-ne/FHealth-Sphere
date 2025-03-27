@@ -30,7 +30,7 @@ namespace Services.Service
         public FirebasePollingService(IServiceScopeFactory scopeFactory, ILogger<HealthRecordService> logger)
         {
             _firebaseClient = new FirebaseClient("https://fhealth-sphere---login-default-rtdb.asia-southeast1.firebasedatabase.app/");
-            _timer = new Timer(async _ => await TimerCallback(), null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
+            //_timer = new Timer(async _ => await TimerCallback(), null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
             _scopeFactory = scopeFactory;
             _logger = logger;
         }
