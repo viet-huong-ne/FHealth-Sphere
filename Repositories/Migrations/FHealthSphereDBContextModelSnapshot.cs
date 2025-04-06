@@ -56,6 +56,9 @@ namespace Repositories.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FCMToken")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
@@ -431,6 +434,52 @@ namespace Repositories.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("BandBrands");
+                });
+
+            modelBuilder.Entity("Contract.Repositories.Entity.BloodPressureClassification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("DeletedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("DiastolicMax")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("DiastolicMin")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastUpdatedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("SystolicMax")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SystolicMin")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BloodPressureClassifications");
                 });
 
             modelBuilder.Entity("Contract.Repositories.Entity.HealthRecord", b =>

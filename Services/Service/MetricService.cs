@@ -359,7 +359,7 @@ namespace Services.Service
             return true;
         }
 
-        private async Task SendNotificationAsync(string title, string body, string token)
+        public async Task SendNotificationAsync(string title, string body, string token)
         {
             var message = new Message()
             {
@@ -371,8 +371,17 @@ namespace Services.Service
                 Token = token
             };
 
-            string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
-            _logger.LogInformation("Successfully sent message: " + response);
+            try
+            {
+                string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+                Console.WriteLine(response);
+                _logger.LogInformation("Successfully sent message: " + response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                _logger.LogError(ex, "Failed to send message.");
+            }
         }
     }
 }

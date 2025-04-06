@@ -361,3 +361,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# FireBase Setting
+FHealthSphere/Config/serviceAccountKey.json
+# Appsetting
+FHealthSphere/appsettings.json
+FHealthSphere/appsettings.Development.json
+FHealthSphere/appsettings.json
+FHealthSphere/appsettings.json
+FHealthSphere/appsettings.json

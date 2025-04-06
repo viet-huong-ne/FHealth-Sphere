@@ -16,5 +16,6 @@ namespace Contract.Services.Interface
         Task<Metric> UpdateMetric(int id, UpdateMetricModel model);
         Task<bool> DeleteMetric(int id);
         Task<Metric> GetMetricById(int id);
+        Task SendNotificationAsync(string title, string body, string token);
     }
 }

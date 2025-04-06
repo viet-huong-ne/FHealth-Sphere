@@ -1,6 +1,7 @@
 ﻿using Contract.Repositories.Entity;
 using Contract.Services.Interface;
 using Core.Base;
+using Core.Store;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.HealthRecordModelViews;
 
@@ -102,6 +103,26 @@ namespace FHealthSphere.Controllers
             {
                 return StatusCode(500, $"Failed to delete HealthRecord with ID {id}: {ex.Message}");
             }
+        }
+        [HttpGet("daily-average")]
+        public async Task<IActionResult> GetDailyAverage([FromQuery] DateTime date, [FromQuery] int? patientId)
+        {
+            var response = await _healthRecordService.GetDailyAverage(date, patientId);
+            if (response.StatusCode != StatusCodeHelper.OK)
+                return StatusCode(500, response.Message);
+
+            return Ok(response.Data);
+        }
+
+        // Weekly Average
+        [HttpGet("weekly-average")]
+        public async Task<IActionResult> GetWeeklyAverage([FromQuery] DateTime startDate, [FromQuery] int? patientId)
+        {
+            var response = await _healthRecordService.GetWeeklyAverage(startDate, patientId);
+            if (response.StatusCode != StatusCodeHelper.OK)
+                return StatusCode(500, response.Message);
+
+            return Ok(response.Data);
         }
     }
 }

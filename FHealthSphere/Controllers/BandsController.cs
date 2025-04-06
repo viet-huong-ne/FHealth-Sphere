@@ -4,7 +4,6 @@ using Core.Base;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.BandModelViews;
-using Services.Service;
 using System.Threading.Tasks;
 
 namespace FHealthSphere.Controllers

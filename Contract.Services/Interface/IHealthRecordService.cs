@@ -11,5 +11,7 @@ namespace Contract.Services.Interface
         Task<HealthRecord> GetHealthRecordCombinedById(int id);
         Task<HealthRecord> UpdateHealthRecordCombined(int id, UpdateHealthRecordCombinedModel model);
         Task<bool> DeleteHealthRecord(int id);
+        Task<BaseResponse<DailyHealthRecordModel>> GetDailyAverage(DateTime date, int? patientId);
+        Task<BaseResponse<WeeklyMetricViewModel>> GetWeeklyAverage(DateTime startDate, int? patientId);
     }
 }

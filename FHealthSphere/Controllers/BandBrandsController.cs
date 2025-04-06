@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.BandBrandModelViews;
-using Services.Service;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 

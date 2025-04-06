@@ -45,17 +45,20 @@ namespace FHealthSphere
         //}
         public static void AddServices(this IServiceCollection services)
         {
+            services.AddHostedService<FirebasePollingServiceV2>();
             services
                 .AddScoped<IUserService, UserService>()
                 .AddScoped<TokenService>()
+                .AddScoped<FirebaseService>()
          .AddScoped<IBandBrandService, BandBrandService>()
          .AddScoped<IHealthRecordService, HealthRecordService>()
          .AddScoped<IMetricGroupService, MetricGroupService>()
          .AddScoped<IMetricService, MetricService>()
          .AddScoped<IRecordMetricItemService, RecordMetricItemService>()
-        //.AddScoped(IAccountService, AccountService)
+         .AddScoped<IAccountService, AccountService>()
         .AddScoped<INotificationService, NotificationService>()
-         .AddScoped<IBandService, BandService>();
+         .AddScoped<IBandService, BandService>()
+         .AddScoped<IBloodPressureService, BloodPressureService>();
 
 
         }
