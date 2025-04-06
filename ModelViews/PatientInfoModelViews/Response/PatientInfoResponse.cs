@@ -9,6 +9,6 @@ namespace ModelViews.PatientInfoModelViews.Response
     public class PatientInfoResponse
     {
         public string? Gender { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
     }
 }

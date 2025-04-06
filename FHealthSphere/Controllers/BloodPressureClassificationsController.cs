@@ -79,7 +79,7 @@ namespace FHealthSphere.Controllers
 
             return NoContent();
         }
-        [HttpPost("check-classification")]
+        [HttpPost("classification-checking")]
         public async Task<IActionResult> CheckBloodPressureClassification([FromBody] CheckBloodPressureModel model)
         {
             var classification = await _service.CheckBloodPressure(model.Systolic, model.Diastolic);

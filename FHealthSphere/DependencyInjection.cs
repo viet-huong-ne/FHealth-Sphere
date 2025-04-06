@@ -45,6 +45,7 @@ namespace FHealthSphere
         //}
         public static void AddServices(this IServiceCollection services)
         {
+            services.AddHostedService<FirebasePollingServiceV2>();
             services
                 .AddScoped<IUserService, UserService>()
                 .AddScoped<TokenService>()

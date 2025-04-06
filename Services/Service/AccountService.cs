@@ -6,6 +6,7 @@ using Core.Store;
 using Core.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using ModelViews.AccountModelViews;
 using ModelViews.AccountModelViews.Request;
 using ModelViews.AccountModelViews.Response;
@@ -74,7 +75,7 @@ namespace Services.Service
             if (pageSize < 1) pageSize = 10;
 
             var accountRepo = _unitOfWork.GetRepository<Account>();
-            var query = accountRepo.Entities.Where(a => !a.DeletedTime.HasValue).OrderByDescending(a => a.CreatedTime);
+            var query = accountRepo.Entities.Include(n => n.PatientInformation).Where(a => !a.DeletedTime.HasValue).OrderByDescending(a => a.CreatedTime);
 
             int totalCount = await query.CountAsync();
             var accounts = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
@@ -99,15 +100,15 @@ namespace Services.Service
                     });
                 }
                 var info = account.PatientInformation;
+                var patientInfo = info.FirstOrDefault();
                 var PatientInfo = new PatientInfoResponse();
-                if (info != null)
+                if (patientInfo != null)
                 {
                     PatientInfo = new PatientInfoResponse
-                {
-                    DateOfBirth = info.First().DateOfBirth,
-                    Gender = info.First().Gender,
-
-                };
+                    {
+                        DateOfBirth = patientInfo.DateOfBirth,
+                        Gender = patientInfo.Gender
+                    };
                 }
                 var AccountModel = new AccountModelResponse
                 {
@@ -121,7 +122,6 @@ namespace Services.Service
                     WatcherResponses = WatcherResponse
                 };
                 result.Add(AccountModel);
-                Console.WriteLine(AccountModel.Role);
             }
 
             return new BasePaginatedList<AccountModelResponse>(result, totalCount, pageNumber, pageSize);
@@ -203,8 +203,32 @@ namespace Services.Service
             if (model.PatientInfo != null)
             {
                 var patientInfo = account.PatientInformation.FirstOrDefault();
-                if (patientInfo != null)
+                
+                if (patientInfo == null)
                 {
+                    // Nếu chưa có PatientInformation, thêm mới
+                    if (!model.PatientInfo.DateOfBirth.HasValue || string.IsNullOrEmpty(model.PatientInfo.Gender))
+                    {
+                        return new BaseResponse<string>(
+                            StatusCodeHelper.BadRequest,
+                            "400",
+                            "Invalid format. Please input DateOfBirth in correct format (YYYY-MM-DD) and Gender."
+                        );
+                    }
+                    var newPatientInfo = new PatientInformation
+                        {
+                            AccountId = account.Id,
+                            Gender = model.PatientInfo.Gender,
+                            DateOfBirth = model.PatientInfo.DateOfBirth.Value,
+                            CreatedBy = "System",
+                            CreatedTime = DateTimeOffset.UtcNow
+                        };
+                        await _unitOfWork.GetRepository<PatientInformation>().InsertAsync(newPatientInfo);                    
+                    
+                }
+                else
+                {
+                    // Nếu đã tồn tại, cập nhật
                     if (!string.IsNullOrEmpty(model.PatientInfo.Gender))
                     {
                         patientInfo.Gender = model.PatientInfo.Gender;
@@ -214,8 +238,12 @@ namespace Services.Service
                     {
                         patientInfo.DateOfBirth = model.PatientInfo.DateOfBirth.Value;
                     }
+
+                    patientInfo.LastUpdatedBy = "System";
+                    patientInfo.LastUpdatedTime = DateTimeOffset.UtcNow;
                 }
             }
+
 
             account.LastUpdatedBy = "System";
             account.LastUpdatedTime = DateTimeOffset.UtcNow;

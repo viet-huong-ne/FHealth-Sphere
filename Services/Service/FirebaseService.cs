@@ -23,11 +23,11 @@ namespace Services.Service
         }
 
         // Hàm gửi dữ liệu lên Firebase
-        public async Task<bool> AddHealthRecordAsync(CreateHealthRecordCombinedModel record)
+        public async Task<bool> AddHealthRecordAsync(CreateHealthRecordModel record)
         {
             string jsonData = JsonConvert.SerializeObject(record);
             var result = await _firebaseClient
-                .Child("healthRecordsV2")
+                .Child("healthRecords")
                 .PostAsync(jsonData);
 
             return result != null;

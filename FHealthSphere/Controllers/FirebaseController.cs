@@ -15,7 +15,7 @@ namespace FHealthSphere.Controllers
             _firebaseService = firebaseService;
         }
         [HttpPost]
-        public async Task<IActionResult> CreateHealthRecord([FromBody] CreateHealthRecordCombinedModel record)
+        public async Task<IActionResult> CreateHealthRecord([FromBody] CreateHealthRecordModel record)
         {
             if (record == null)
             {

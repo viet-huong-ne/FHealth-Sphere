@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ModelViews.RecordMetricItemModelViews;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -9,14 +10,10 @@ namespace ModelViews.HealthRecordModelViews
 {
     public class CreateHealthRecordModel
     {
-        [Required(ErrorMessage = "PatientId is required.")]
-        public int PatientId { get; set; }
-
-        [Required(ErrorMessage = "BandId is required.")]
-        public int BandId { get; set; }
-
-        [Required(ErrorMessage = "GhiChu is required.")]
-        [StringLength(1000, ErrorMessage = "GhiChu cannot exceed 1000 characters.")]
+        public int? PatientId { get; set; }
+        public string? BandId { get; set; }
+        public DateTime? Date {get; set; }
         public string GhiChu { get; set; }
+        public List<CreateRecordMetricItemModel> RecordMetricItems { get; set; }
     }
 }

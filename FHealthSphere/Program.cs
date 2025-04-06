@@ -152,9 +152,11 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHttpClient();
-builder.Services.AddSingleton<FirebasePollingService>();
+builder.Services.AddHostedService<FirebasePollingServiceV2>();
+//builder.Services.AddSingleton<FirebasePollingService>();
 var app = builder.Build();
-app.Services.GetRequiredService<FirebasePollingService>();
+//app.Services.GetRequiredService<FirebasePollingService>();
+
 // Middleware pipeline
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {

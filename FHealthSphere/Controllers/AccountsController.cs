@@ -30,6 +30,7 @@ namespace FHealthSphere.Controllers
             try
             {
                 var accounts = await _accountService.GetAllAccounts(pageNumber, pageSize);
+                Console.WriteLine("HAHAHAAHAHA");
                 return Ok(BaseResponse<BasePaginatedList<AccountModelResponse>>.OkResponse(accounts));
             }
             catch (Exception ex)
